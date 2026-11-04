@@ -1,6 +1,6 @@
 import sys, time, textwrap, os, copy, random, json, glob        #    ---------TO-DO-----------
                                                                 #   add to dig area   /add lore
-def typing(text):
+def typing(text):                                               #hi iii
     terminal_size = os.get_terminal_size().columns
     wrap_width = terminal_size - 4
     if wrap_width < 20:
