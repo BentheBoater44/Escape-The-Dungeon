@@ -1327,6 +1327,19 @@ dungeon = {
         "objects" : {},
         "items" : {},
         },
+
+    "warm_cave" : {
+        "dark" : True,
+        "name" : "THE WARM CAVE.",
+        "desc" : "IT IS TOO DARK TO SEE ANYTHING.",
+        "desc_lit" : "YOU ARE IN A WARM CAVE WITH WALLS MADE OF YELLOW ROCK. THE CHAMBER IS LOW AND THERE ARE SMALL CRAWLS TO THE NORTH AND SOUTH. ",
+        "visited" : False,
+        "exits" : {"n" : "cold_cave",
+                   "e" : "tight_squeeze_cavern",
+                   "s" : "hot_cave"},
+        "objects" : {},
+        "items" : {},
+        },
     }
 
 
