@@ -1,6 +1,6 @@
 import sys, time, textwrap, os, copy, random, json, glob        #    ---------TO-DO-----------
                                                                 #   add to dig area   /add lore
-def typing(text):                                               #hi iii
+def typing(text):
     terminal_size = os.get_terminal_size().columns
     wrap_width = terminal_size - 4
     if wrap_width < 20:
@@ -64,7 +64,7 @@ safe = False
 #variables                              variables
 playing = True
 instructions = True
-current_room = "max_security_east"
+current_room = "dig_site"
 inventory = ["lighter", "oil", "seeds"]
 switch_active = True
 lighter_lit = False
@@ -1207,7 +1207,7 @@ dungeon = {
         "visited" : False,
         "exits" : {"w" : "guard_office_2"},
         "objects" : {"lunchbox" : {
-            "examine" : "INSIDE, THERE APPEARS TO BE A SMALL BLACK HOLE. THERE'S A SPOON ORBITING IT.",
+            "examine" : "INSIDE THE LUNCHBOX, THERE APPEARS TO BE A SMALL BLACK HOLE. THERE'S A SPOON ORBITING IT.",
             "scoring" : {
                     "score" : 10,
                     "secret" : True,
@@ -1278,9 +1278,52 @@ dungeon = {
         "dark" : True,
         "name" : "THE ROCKY CAVERN.",
         "desc" : "IT IS TOO DARK TO SEE ANYTHING.",
-        "desc_lit" : "",
+        "desc_lit" : "YOU ARE IN A TALL, THIN CAVERN, FULL OF ROCKS AND BOULDERS SCATTERED EVERYWHERE. IT LOOKS AS THOUGH THERE'S BEEN A RECENT CAVE-IN. BETWEEN THE HUGE ROCKS AND SMALL PEBBLES, A HOLE IN THE NORTH WALL LOOKS JUST BIG ENOUGH TO CRAWL THROUGH, AS WELL AS A GAP IN THE ROCKS TO THE EAST...",
         "visited" : False,
-        "exits" : {},
+        "exits" : {"s" : "musty_cavern",
+                   "e" : "sealed_door",
+                   "n" : "collapsed_cavern"},
+        "objects" : {"rocks" : {"examine" : "THERE ARE LOADS OF ROCKS, BOULDERS AND PEBBLES. ALL LOOK ROUGH AND LOOSE AS IS THEY HAVEN'T BEEN LYING HERE FOR VERY LONG."},},
+        "items" : {},
+        },
+
+    "sealed_door" : {
+        "dark" : True,
+        "name" : "THE CHAMBER WITH THE SEALED DOOR.",
+        "desc" : "IT IS TOO DARK TO SEE ANYTHING.",
+        "desc_lit" : "YOU ARE IN A VERY SMALL CHAMBER WITH NOTHING BUT ROCKY, MUDDY WALLS AND ONE RUSTED, STEEL DOOR. IT LOOKS LIKE IT HASN'T MOVED IN YEARS.",
+        "visited" : False,
+        "exits" : {"w" : "rocky_cavern"},
+        "objects" : {"door_sealed" : {
+            "id_type" : "door",
+            "examine" : "THE DOOR WON'T BUDGE. IT'S COMPLETELY SEALED SHUT. WHATEVER IS BEHIND IT CLEARLY DOESN'T WANT TO BE SEEN. YOU CAN HEAR FAINT WHISPERS ON THE OTHER SIDE."
+            },
+        },
+        "items" : {},
+        },
+
+    "collapsed_cavern" : {
+        "dark" : True,
+        "name" : "THE COLLAPSED CAVERN.",
+        "desc" : "IT IS TOO DARK TO SEE ANYTHING.",
+        "desc_lit" : "THE CAVERN YOU ARE IN HAS NOW COMPLETELY COLLAPSED. THE AIR IS DUSTY AND HUGE ROCKS AND CHUNKS OF EARTH ARE FILLING THE CAVE. IT'S INCREDIBLY HARD FOR ME TO NAVIGATE FOR YOU BUT I CAN NOTICE A VERY TIGHT CRAWL TO THE WEST.",
+        "visited" : False,
+        "exits" : {"w": "tight_squeeze_cavern",
+                   "s" : "rocky_cavern"},
+        "blocked_exits" : {"n" : "YOU CRAWL AROUND BUT QUICKLY GET LOST IN THE DEBIRS.",
+                           "e" : "YOU CRAWL AROUND BUT QUICKLY GET LOST IN THE DEBIRS."},
+        "objects" : {},
+        "items" : {},
+        },
+
+    "tight_squeeze_cavern" : {
+        "dark" : True,
+        "name" : "THE TIGHT SQUEEZE.",
+        "desc" : "IT IS TOO DARK TO SEE ANYTHING.",
+        "desc_lit" : "YOU ARE IN A VERY TIGHT SQUEEZE, ONLY JUST SMALL ENOUGH TO FIT THROUGH. THE ROCK IS VERY SMOOTH HERE HOWEVER, UNLIKE THE PREVIOUS CAVERNS.",
+        "visited" : False,
+        "exits" : {"e" : "collapsed_cavern",
+                   "w" : "warm_cave"},
         "objects" : {},
         "items" : {},
         },
@@ -1343,6 +1386,8 @@ while True:
             discover(20, False, "I THINK I'VE BEEN SPOTTED...  -  BREAK INTO MAX SECURITY")
         if current_room == "dig_site" and dungeon["dig_site"]["visited"] == False:
             discover(30, False, "THAT'S RIGHT. LET ME THROUGH!  -  GET PAST THE CHECKPOINT")
+        if current_room == "sealed_door" and dungeon["sealed_door"]["visited"] == False:
+            discover(10, True, "MEMORIES OF A LOST DUNGEON...  -  FIND THE SEALED DOOR...")
 
             #---------------------------------------------------------------------------------------
 
@@ -1429,6 +1474,19 @@ while True:
             if lighter_lit == True:
                 if dungeon[current_room]["visited"] == False:
                     typing("\n\n" + dungeon[current_room]["desc_lit"])
+                    #collapsed cavern exeption------------------------------------------
+                    if current_room == "collapsed_cavern" and dungeon[current_room]["visited"] == False:
+                        time.sleep(0.4)
+                        typing("\nTHE CAVE SHAKES EVER SO SLIGHTLY AND A SMALL BOULDER FALLS FROM THE CEILING AND HITS YOU RIGHT ON THE HEAD!")
+                        if "hat" in inventory:
+                            typing("\nGOOD JOB YOU WERE WEARING YOUR HAT! THAT WOULD'VE HURT OTHERWISE.")
+                        else:
+                            typing("\nWHY WERE YOU NOT WEARING YOUR HAT? THAT COULD HAVE SAVED YOU!")
+                            time.sleep(0.5)
+                            ending = "death"
+                            playing = False
+                            break
+                    #-------------------------------------------------------------------
                     dungeon[current_room]["visited"] = True
                 else:
                     typing("\n\nYOU ARE IN " + dungeon[current_room]["name"])
@@ -1472,6 +1530,8 @@ while True:
 
         if current_room == "dig_site" and left_dig_site == True:
             typing("ALL MINERS ARE STARING AT YOU, CLEARLY SLIGHTLY STUNNED BY WHAT YOU DID EARLIER. NONE EVEN TRY TO COMMUNICATE WITH YOU.")
+
+
 
         if is_hidden == current_room:
             typing("\nYOU ARE HIDDEN.")
@@ -1590,6 +1650,8 @@ while True:
                 target = "workers"
         if target in ["plant", "foliage", "greenery"]:
             target = "plants"
+        if target in ["rock", "pebble", "boulder", "pebbles", "boulders"]:
+            target = "rocks"
 
         if action == "use":                                              #Use redirector
             if target in ["pin", "pincode", "code"]:
@@ -1633,7 +1695,6 @@ while True:
             else:
                 typing("YOU DON'T HAVE A HAT!")
                 continue
-
 
 
                                                                         #Uninteractable objects:
@@ -1699,6 +1760,8 @@ while True:
                     target = obj_name
                     break
 
+        if action == "open" and current_room == "sealed_door" and target == "door_sealed":
+            action = "x"
 #========================================commands====================================================
 #====================================================================================================
         if command == "quit":                                             #Quit Command
@@ -1770,7 +1833,7 @@ while True:
 
         elif action == "n" or action == "north":                                #north
             #dig site exeption---------------------------------------------
-            if current_room == "dig_site":
+            if current_room == "dig_site" and left_dig_site == False:
                 typing("ONE OF THE WORKERS COMES UP TO YOU AND BLOCK YOUR PATH.\n\n'YOU CAN'T GO THROUGH THERE! IT'S UNSTABLE. WE STLL HAVEN'T HEARD BACK FROM THE MINER'S UNION AS TO IF WE'RE ALLOWED THROUGH!'\n\nDO YOU WISH TO PROCEED ANYWAY? Y/N")
                 miner_choice = input("\n> ").lower().strip()
                 if miner_choice == "y":
@@ -1822,15 +1885,15 @@ while True:
 
 
         elif action == "e" or action == "east":                               #east
-            #Tight corridor exeption---------------------------------------
-            if current_room == "huge_room":
+            #Tight corridor/tight squeeze exeption---------------------------------------
+            if current_room in ["huge_room", "warm_cave"]:
                 heavy_count = 0
 
                 for pocket_item in inventory:
                     if master_items[pocket_item]["weight"] == "heavy":
                         heavy_count = heavy_count + 1
                 if heavy_count > 0:
-                    typing("THE CORRIDOR IS TOO TIGHT FOR YOU TO FIT THROUGH. YOU MIGHT NEED TO DROP SOMETHING FIRST.")
+                    typing("THE PASSAGE IS TOO TIGHT FOR YOU TO FIT THROUGH. YOU MIGHT NEED TO DROP SOMETHING FIRST.")
                     continue
             #--------------------------------------------------------------
             if "e" in dungeon[current_room]["exits"]:
@@ -1848,15 +1911,15 @@ while True:
 
 
         elif action == "w" or action == "west":                              #west
-            #Tight corridor exeption---------------------------------------
-            if current_room == "dull_room":
+            #Tight corridor/tight squeeze exeption---------------------------------------
+            if current_room in ["dull_room", "collapsed_cavern"]:
                 heavy_count = 0
 
                 for pocket_item in inventory:
                     if master_items[pocket_item]["weight"] == "heavy":
                         heavy_count = heavy_count + 1
                 if heavy_count > 0:
-                    typing("THE CORRIDOR IS TOO TIGHT FOR YOU TO FIT THROUGH. YOU MIGHT NEED TO DROP SOMETHING FIRST.")
+                    typing("THE PASSAGE IS TOO TIGHT FOR YOU TO FIT THROUGH. YOU MIGHT NEED TO DROP SOMETHING FIRST.")
                     continue
             #--------------------------------------------------------------
             #checkpoint exeption-------------------------------------------
@@ -2161,6 +2224,8 @@ while True:
 
                                                                                     #Get Command
         elif action in ["get", "take", "pick", "pickup", "grab", "collect", "steal", "give", "g"]:
+            if target in dungeon[current_room]["objects"] and target not in dungeon[current_room]["items"]:
+                typing("YOU CAN'T PICK THAT UP!")
             #pantry exeption------------------
             if current_room == "pantry":
                 typing("I'M NOT LETTING YOU TAKE ANYTHING! THEY'D NOTICE!")
