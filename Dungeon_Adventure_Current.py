@@ -2366,6 +2366,7 @@ while True:
                                 if all([breaker_done, prime_done, engage_done, open_done, insert_done, pull_done]) == True:
                                     time.sleep(0.5)
                                     typing("\nWITH A GROAN AND A SUDDEN SPLUTTER, THE GENERATOR BURSTS TO LIFE, ALMOST RUPTURING YOUR EARDRUMS AS THE IMMENSE SOUND BOOMS THROUGH THE WHOLE CHAMBER. HUGE PLUMES OF SMOKE AND EXHAUST ARE COUGHED OUT OF THE VENTS AT AN EXTREME RATE. IF THE DUNGEON DIDN'T HAVE ENOUGH POWER BEFORE, IT CERTAINLY DOES NOW.")
+                                    discover(50, False, None)
                                     switch_active = True
                                     fixing_gen = False
                                 else:
