@@ -1,5 +1,5 @@
 import sys, time, textwrap, os, copy, random, json, glob        #    ---------TO-DO-----------
-                                                                #   add to dig area   /add lore
+                                                                #   add cheese room and powered room                    descriptions    /add lore
 def typing(text):
     terminal_size = os.get_terminal_size().columns
     wrap_width = terminal_size - 4
@@ -58,14 +58,12 @@ def loading_bar(message, total_time):
 
 
 
-devmode = False
-god = False
-safe = False
+
 #variables                              variables
 playing = True
 instructions = True
-current_room = "dig_site"
-inventory = ["lighter", "oil", "seeds"]
+current_room = "generator_room"
+inventory = ["lighter", "oil", "seeds","reshaped_key"]
 switch_active = True
 lighter_lit = False
 lighter_is_lit = False
@@ -89,6 +87,12 @@ pincode = f"{random.randint(1000,9999)}"
 guard_distracted = False
 miner_moved = False
 left_dig_site = False
+fixing_gen = False
+
+devlit = False
+devmode = False
+god = False
+safe = False
 
 danger_zone1_Backup = ["industrial_junction", "vent_room", "boiler_room", "water_room", "translator_room", "tight_corridor", "dull_room", "guard_office_1", "workshop"]
 danger_zone2_Backup = ["max_security_west", "max_security", "max_security_east", "guard_office_2", "contraband_room", "dig_checkpoint"]
@@ -1306,12 +1310,12 @@ dungeon = {
         "dark" : True,
         "name" : "THE COLLAPSED CAVERN.",
         "desc" : "IT IS TOO DARK TO SEE ANYTHING.",
-        "desc_lit" : "THE CAVERN YOU ARE IN HAS NOW COMPLETELY COLLAPSED. THE AIR IS DUSTY AND HUGE ROCKS AND CHUNKS OF EARTH ARE FILLING THE CAVE. IT'S INCREDIBLY HARD FOR ME TO NAVIGATE FOR YOU BUT I CAN NOTICE A VERY TIGHT CRAWL TO THE WEST.",
+        "desc_lit" : "THE CAVERN YOU ARE IN HAS NOW COMPLETELY COLLAPSED. THE AIR IS DUSTY, HUGE ROCKS AND CHUNKS OF EARTH ARE FILLING THE CAVE AND LOOSE STONES SHIFT UNDERFOOT. THERE IS A VERY TIGHT CRAWL TO THE WEST.",
         "visited" : False,
         "exits" : {"w": "tight_squeeze_cavern",
                    "s" : "rocky_cavern"},
-        "blocked_exits" : {"n" : "YOU CRAWL AROUND BUT QUICKLY GET LOST IN THE DEBIRS.",
-                           "e" : "YOU CRAWL AROUND BUT QUICKLY GET LOST IN THE DEBIRS."},
+        "blocked_exits" : {"n" : "YOU CRAWL AROUND BUT QUICKLY GET LOST IN THE DEBRIS.",
+                           "e" : "YOU CRAWL AROUND BUT QUICKLY GET LOST IN THE DEBRIS."},
         "objects" : {},
         "items" : {},
         },
@@ -1320,7 +1324,7 @@ dungeon = {
         "dark" : True,
         "name" : "THE TIGHT SQUEEZE.",
         "desc" : "IT IS TOO DARK TO SEE ANYTHING.",
-        "desc_lit" : "YOU ARE IN A VERY TIGHT SQUEEZE, ONLY JUST SMALL ENOUGH TO FIT THROUGH. THE ROCK IS VERY SMOOTH HERE HOWEVER, UNLIKE THE PREVIOUS CAVERNS.",
+        "desc_lit" : "YOU ARE IN A VERY TIGHT SQUEEZE, ONLY JUST SMALL ENOUGH TO FIT THROUGH. THE ROCK IS VERY SMOOTH AND WORN HERE HOWEVER, UNLIKE THE PREVIOUS CAVERNS.",
         "visited" : False,
         "exits" : {"e" : "collapsed_cavern",
                    "w" : "warm_cave"},
@@ -1332,12 +1336,109 @@ dungeon = {
         "dark" : True,
         "name" : "THE WARM CAVE.",
         "desc" : "IT IS TOO DARK TO SEE ANYTHING.",
-        "desc_lit" : "YOU ARE IN A WARM CAVE WITH WALLS MADE OF YELLOW ROCK. THE CHAMBER IS LOW AND THERE ARE SMALL CRAWLS TO THE NORTH AND SOUTH. ",
+        "desc_lit" : "YOU ARE IN A TEPID, CRAMPED CAVE WITH WALLS MADE OF YELLOW ROCK, WARM TO THE TOUCH. THERE AIR IS STILL AND STUFFY AND THERE ARE SMALL CRAWLS TO THE NORTH AND SOUTH.",
         "visited" : False,
         "exits" : {"n" : "cold_cave",
                    "e" : "tight_squeeze_cavern",
                    "s" : "hot_cave"},
         "objects" : {},
+        "items" : {},
+        },
+    "cold_cave" : {
+        "dark" : True,
+        "name" : "THE COLD CAVE.",
+        "desc" : "IT IS TOO DARK TO SEE ANYTHING.",
+        "desc_lit" : "YOU ARE IN A VERY COLD CAVE WITH OVERHANGING, PALE WALLS ON ALL SIDES. YOUR BREATH FORMS PALE CLOUDS IN THE AIR IN FRONT OF YOU THAT SLOWLY DISSIPATE BEFORE YOU.",
+        "visited" : False,
+        "exits" : {"s" : "warm_cave"},
+        "objects" : {},
+        "items" : {
+            "bent_key" : {
+                "name" : "A BENT KEY",
+                "hidden_in" : None
+                },
+            },
+        },
+
+    "hot_cave" : {
+        "dark" : True,
+        "name" : "THE HOT CAVE.",
+        "desc" : "IT IS TOO DARK TO SEE ANYTHING.",
+        "desc_lit" : "YOU ARE IN A HOT CAVE WITH ORANGE STONE WALLS AND DRY AIR. THE SMELL OF SMOKE IS JUST BARELY NOTICEABLE FROM THE SOUTHERN PASSAGE.",
+        "visited" : False,
+        "exits" : {"n" : "warm_cave",
+                   "s" : "sweltering_cave"},
+        "objects" : {},
+        "items" : {},
+        },
+
+    "sweltering_cave" : {
+        "dark" : True,
+        "name" : "THE SWELTERING CAVE.",
+        "desc" : "IT IS TOO DARK TO SEE ANYTHING.",
+        "desc_lit" : "YOU ARE IN A SWELTERINGLY HOT CAVE WITH BLOOD RED WALLS. THE AIR IS THICK WITH SMOKE AND HEAT RADIATES FROM EVERY INCH OF THE CHAMBER. IT'S GETTING DIFFICULT TO BREATHE IN THESE CONDITIONS. ON THE SOUTH SIDE OF THE CAVE, THERE ARE REMNANTS OF A CORRIDOR WITH A LOCKED DOOR BLOCKING THE PASSAGE FURTHER SOUTH.",
+        "visited" : False,
+        "exits" : {"n" : "hot_cave"},
+        "blocked_exits" : {"s" : "THE DOOR IS LOCKED."},
+        "objects" : {
+            "hot_door" : {
+                "name" : "THE LOCKED DOOR",
+                "examine" : "IT'S MADE OF THIN STONE AND HAS A LARGE KEYHOLE IN THE CENTRE.",
+                "open_locked" : "THE DOOR IS LOCKED.",
+                "open" : "YOU INSERT THE NEWLY RESHAPED KEY AND IT FITS PERFECTLY. THE DOOR SWINGS OPEN EASILY DESPITE HOW HEAVY IT IS.",
+                "examine_opened" : "IT'S MADE OF THIN STONE AND HAS A LARGE KEYHOLE IN THE CENTRE. IT IS WIDE OPEN INTO THE BROKEN CORRIDOR.",
+                "id_type" : "door",
+                "unlocker" : "reshaped_key",
+                "object_open" : False,
+                "locked" : True,
+                "unlock_direction" : "s",
+                "unlock_room" : "broken_corridor",
+                },
+            },
+        "items" : {},
+        },
+
+    "broken_corridor" : {
+        "dark" : True,
+        "name" : "THE BROKEN CORRIDOR.",
+        "desc" : "IT IS TOO DARK TO SEE ANYTHING.",
+        "desc_lit" : "YOU ARE IN A COMPLETELY BROKEN CORRIDOR. ALMOST ALL OF THE LITTLE AMOUNT OF FURNITURE THAT MAY HAVE ONCE BEEN PRESENT HAVE NOW BEEN COMPLETELY DEMOLISHED. WHETHER THIS WAS CAUSED BY A CAVE-IN OR SOME OTHER DISASTER IS UNCLEAR. TO THE EAST AND SOUTH ARE SMALL DOORS.",
+        "visited" : False,
+        "exits" : {"e" : "collapsed_office",
+                   "n" : "sweltering_cave",
+                   "s" : "generator_room"},
+        "objects" : {},
+        "items" : {},
+        },
+
+    "collapsed_office" : {
+        "dark" : True,
+        "name" : "THE COLLAPSED OFFICE.",
+        "desc" : "IT IS TOO DARK TO SEE ANYTHING.",
+        "desc_lit" : "YOU ARE IN A TOTALLY DECIMATED OFFICE. THE ENTIRE ROOM HAS BEEN DESTROYED BEYOND REPAIR BY A HUGE COLLAPSE FROM THE CEILING. ALL THAT REMAINS IS A SINGLE CHAIR AND HALF A DESK.",
+        "visited" : False,
+        "exits" : {"w" : "broken_corridor"},
+        "objects" : {"chair" : {"examine" : "IT'S A SMALL, WOODEN CHAIR WITH A BROWN CUSHION ON IT. I'M NOT SURE IF IT WAS ALWAYS THAT COLOUR."},},
+        "items" : {},
+        },
+
+    "generator_room" : {
+        "dark" : True,
+        "name" : "THE GENERATOR ROOM.",
+        "desc" : "IT IS TOO DARK TO SEE ANYTHING.",
+        "desc_lit" : "YOU ARE IN A LARGE, CAVERNOUS ROOM WITH A COUPLE OF SMALL, INSIGNIFICANT EXITS...\nAND THERE, IN THE VERY CENTRE, SITS THE MONSTROUS GENERATOR THAT POWERS THE WHOLE DUNGEON. OUT OF THE MANY VENTS BRANCHING OFF IT, ONLY ONE HAS A WEAK PUFF OF EXHAUST ESCAPING FROM IT EVERY FEW SECONDS. TITANIC PIPES HISS ALMOST SILENTLY, EXTENDING OFF INTO HUGE PISTON CYLINDERS. THE REST OF THE ROOM LIES STILL, AS IF WAITING. A MASSIVE CONTROL PANEL IS POSITIONED AT THE OTHER END OF THE ROOM, FACING DIRECTLY AT THE TREMENDOUS MACHINE. SOMETHING ISN'T RIGHT...",
+        "visited" : False,
+        "exits" : {"n" : "broken_corridor",
+                   "e" : "cheese_room"},
+        "objects" : {
+            "generator" : {
+                "examine" : "IT'S AN INSANELY BIG GENERATOR WITH COUNTLESS PISTONS, CYLINDERS, PIPES, EXHAUSTS, TANKS AND FANS. IT'S ALMOST MOTIONLESS AND SILENT APART FROM ONE SMALL CYLINDER AND VENT, PUFFING QUIELTY EVERY FEW SECONDS."
+                    },
+            "panel" : {
+                "examine" : "IT'S A VERY LARGE CONTROL PANEL, WITH MANY BUTTONS AND SWITCHES. IF WE WANT TO GET THIS GENERATOR BACK ONLINE, WE WILL HAVE TO DO THIS CAREFULLY."
+                },
+
+            },
         "items" : {},
         },
     }
@@ -1456,9 +1557,9 @@ while True:
                 typing("THE FIGURES LOOK AT YOU, CONFUSED BY YOUR ACCENT. YOU TAKE THIS OPPORTUNITY TO LEAVE THE ROOM SWIFTLY.\n\n(MAYBE NEXT TIME TYPE EITHER Y OR N.)")
                 current_room = "meeting_secret_passage"
                 continue
-        if lighter_is_lit == True and "lighter" in inventory:
+        if lighter_is_lit == True and "lighter" in inventory or devlit == True:
             lighter_lit = True
-        elif lighter_is_lit == True and "lighter" not in inventory:
+        elif lighter_is_lit == True and "lighter" not in inventory and devlit == False:
             lighter_lit = False
             if "dark" in dungeon[current_room] and dungeon[current_room]["dark"] == True:
                 for dark_item in dungeon[current_room]["items"]:
@@ -1666,6 +1767,9 @@ while True:
         if target in ["rock", "pebble", "boulder", "pebbles", "boulders"]:
             target = "rocks"
 
+        if target in ["control"] and current_room == "generator_room":
+            target = "panel"
+
         if action == "use":                                              #Use redirector
             if target in ["pin", "pincode", "code"]:
                 action = "open"
@@ -1691,6 +1795,9 @@ while True:
             elif target in ["vice"] and current_room == "workshop":
                 action = "drop"
                 target = "vice"
+            elif target in ["panel"] and current_room == "generator_room":
+                action = "examine"
+                target = "panel"
             else:
                 typing("YOU CANNOT USE THAT IN THIS CONTEXT.")
                 continue
@@ -2087,7 +2194,7 @@ while True:
                 if target == "tank":
                     typing(dungeon[current_room]["objects"][target]["examine"])
                     typing("DO YOU WANT TO BLOW THE WHISTLE? Y/N")
-                    blowdecision = input("\n>").strip().lower()
+                    blowdecision = input("\n> ").strip().lower()
                     if blowdecision == "y":
                         if whistle_blown == 0:
                             typing("TOOT! TOOT!")
@@ -2138,6 +2245,141 @@ while True:
                             continue
                         else:
                             typing("THE MAN BLOCKS YOUR PATH. 'I'M SORRY MATE, NO HARD HAT, NO ENTRY. THAT'S THE RULES I'M AFRAID.'")
+                #-----------------------------------------------------------------
+                #generator exeption-----------------------------------------------
+                if target == "panel":
+                    typing(dungeon[current_room]["objects"]["panel"]["examine"])
+                    typing("DO YOU WANT TO TRY TO FIX THE GENERATOR? Y/N")
+                    fix_choice = input("\n> ").strip().lower()
+                    if fix_choice == "y":
+                        fixing_gen = True
+                        typing("THE CONTROL PANEL READS:\n")
+                        loading_bar("", 0.3)
+                        typing("---SUPER ULTRA MEGA DIESEL 4004 GENERATOR---\n-LICENCED UNDER BLACKSTONE DUNGEON-\n\n--WARNING: GENERATOR ONLY TO BE USED BY QUALIFIED ENGINEERS!--\n\n-----IN CASE OF EMERGENCY SHUTDOWN-----\n\n-WARNING: BEFORE RESTARTING GENERATOR, CHECK THAT ALL FUSES ARE INTACT AND OPERATIONAL.\n\n-----STARTUP SEQUENCE-----\n\n1- RESET BREAKER\n\n2- PRIME ENGINE\n\n3- ENGAGE STARTER MOTOR\n\n4- OPEN VALVE TO LET FUEL THROUGH\n\n5- INSERT KEY\n\n6- PULL LEVER LABELLED START\n\n-WARNING: IF ANY STEP IS DONE INCORRECTLY, YOU MUST RESET THE BREAKER BEFORE CONTINUING.")
+                        loading_bar("", 0.3)
+                        typing("--IF FUSE HAS BLOWN:--\n\n- REMOVE FUSE\n\n- INSERT FUSE (NEW FUSES CAN BE FOUND IN A COMPARTMENT ON THE LEFT.)\n\n- CONTINUE WITH STARTUP SEQUENCE.")
+                        loading_bar("", 0.3)
+
+                        fuse_check = False
+                        fuse_removed = False
+                        fuse_inserted = False
+                        fuse_done = False
+                        breaker_done = False
+                        prime_done = False
+                        engage_done = False
+                        open_done = False
+                        insert_done = False
+                        pull_done = False
+
+                        typing("\nLUCKILY ALL THE BUTTONS ARE LABELLED AND THE KEY'S ALREADY INSERTED. *TYPE 'READ' TO RE-READ THE INSTRUCTIONS AGAIN. USE ONE OR TWO WORD COMMANDS TO CARRY OUT THE NEEDED ACTIONS.")
+
+                        while fixing_gen == True:
+
+                            command = input("\n> ").strip().lower()
+
+                            words = command.split(" ")              #Sentence Splitter
+
+                            action = words[0]
+                            if len(words) > 1:
+                                target = words[1]
+                            else:
+                                target = ""
+
+                            if action in ["read", "help"]:
+                                typing("THE CONTROL PANEL READS:\n")
+                                loading_bar("", 0.3)
+                                typing("---SUPER ULTRA MEGA DIESEL 4004 GENERATOR---\n-LICENCED UNDER BLACKSTONE DUNGEON-\n\n--WARNING: GENERATOR ONLY TO BE USED BY QUALIFIED ENGINEERS!--\n\n-----IN CASE OF EMERGENCY SHUTDOWN-----\n\n-WARNING: BEFORE RESTARTING GENERATOR, CHECK THAT ALL FUSES ARE INTACT AND OPERATIONAL.\n\n-----STARTUP SEQUENCE-----\n\n1- RESET BREAKER\n\n2- PRIME ENGINE\n\n3- ENGAGE STARTER MOTOR\n\n4- OPEN VALVE TO LET FUEL THROUGH\n\n5- INSERT KEY\n\n6- PULL LEVER LABELLED START\n\n-WARNING: IF ANY STEP IS DONE INCORRECTLY, YOU MUST RESET THE BREAKER BEFORE CONTINUING.")
+                                loading_bar("", 0.3)
+                                typing("--IF FUSE HAS BLOWN:--\n\n- REMOVE FUSE\n\n- INSERT FUSE (NEW FUSES CAN BE FOUND IN A COMPARTMENT ON THE LEFT.)\n\n- CONTINUE WITH STARTUP SEQUENCE.")
+                                loading_bar("", 0.3)
+
+                            elif action == "check" and target in ["fuse", "fuses"]:
+                                if fuse_done != True:
+                                    if fuse_removed == True:
+                                        typing("THERE'S A FUSE MISSING.")
+                                    else:
+                                        typing("AH! A FUSE HAS BLOWN.")
+                                        fuse_check = True
+                                else:
+                                    typing("ALL FUSES ARE FINE!")
+
+                            elif action == "remove" and target in ["fuse", "fuses"]:
+                                if fuse_check == True:
+                                    if fuse_removed == False:
+                                        typing("BLOWN FUSE REMOVED!")
+                                        fuse_removed = True
+                                    else:
+                                        typing("YOU ALREADY REMOVED THE FUSE.")
+                                else:
+                                    typing("YOU HAVEN'T CHECKED THEM YET!")
+
+                            elif action in ["insert", "get"] and target in ["fuse", "fuses"]:
+                                if fuse_check == True:
+                                    if fuse_removed == True:
+                                        if fuse_inserted == False:
+                                            typing("NEW FUSE INSERTED!")
+                                            fuse_inserted = True
+                                            fuse_done = True
+                                        else:
+                                            typing("YOU ALREADY INSERTED A NEW FUSE.")
+                                    else:
+                                        typing("YOU HAVEN'T REMOVED THE BLOWN ONE.")
+                                else:
+                                    typing("YOU HAVEN'T EVEN CHECKED THE FUSES YET!")
+
+
+
+                            elif action == "reset" and target in ["breaker", "breakers"]:
+                                typing("BREAKER RESET!")
+                                if fuse_done == True:
+                                    breaker_done = True
+                                prime_done = False
+                                engage_done = False
+                                open_done = False
+                                insert_done = False
+                                pull_done = False
+
+                            elif action == "prime" and target in ["engine"]:
+                                typing("ENGINE PRIMED!")
+                                prime_done = True
+
+                            elif action == "engage" and target in ["starter", "motor"]:
+                                typing("STARTER MOTOR ENGAGED!")
+                                if prime_done == True:
+                                    engage_done = True
+
+                            elif action == "open" and target in ["valve", "fuel"]:
+                                typing("FUEL VALVE OPENED!")
+                                if engage_done == True:
+                                    open_done = True
+
+                            elif action in ["insert", "turn"] and target in ["key"]:
+                                typing("WELL LUCKILY THE KEY'S ALREADY INSERTED. BUT YOU TURN IT TOO.")
+                                if open_done == True:
+                                    insert_done = True
+
+                            elif action == "pull" and target in ["lever", "switch"]:
+                                typing("LEVER PULLED!")
+                                if insert_done == True:
+                                    pull_done = True
+
+                                if all([breaker_done, prime_done, engage_done, open_done, insert_done, pull_done]) == True:
+                                    time.sleep(0.5)
+                                    typing("\nWITH A GROAN AND A SUDDEN SPLUTTER, THE GENERATOR BURSTS TO LIFE, ALMOST RUPTURING YOUR EARDRUMS AS THE IMMENSE SOUND BOOMS THROUGH THE WHOLE CHAMBER. HUGE PLUMES OF SMOKE AND EXHAUST ARE COUGHED OUT OF THE VENTS AT AN EXTREME RATE. IF THE DUNGEON DIDN'T HAVE ENOUGH POWER BEFORE, IT CERTAINLY DOES NOW.")
+                                    switch_active = True
+                                    fixing_gen = False
+                                else:
+                                    if breaker_done == False:
+                                        typing("A LARGE RED WARNING LIGHT COMES ON AND AN ALARM BEEPS FOR A SECOND. THE BREAKER HAS COME BACK ON. A FUSE MUST BE BLOWN.")
+                                    else:
+                                        typing("A SMALL RED WARNING LIGHT COMES ON. YOU HAVEN'T DONE SOMETHING RIGHT.")
+
+                            else:
+                                typing("SORRY, I DON'T UNDERSTAND THAT COMMAND. MAKE SURE YOU'RE TYPING THE RIGHT THING. IF YOU THINK YOU ARE, TRY A DIFFERENT WORD COMBINATION.")
+                        continue
+                    else:
+                        typing("OK.")
+                        continue
                 #-----------------------------------------------------------------
 
                 for item_name in dungeon[current_room]["items"]:
@@ -2487,6 +2729,12 @@ while True:
                 continue
             elif target in dungeon[current_room]["objects"]:
                 obj_data = dungeon[current_room]["objects"][target]
+                #hot door exeption------------------------------------------
+                if target == "hot_door" and current_room == "sweltering_cave":
+                    if "bent_key" in inventory:
+                        typing("YOU TRY THE BENT KEY, AND ALTHOUGH IT LOOKS THE RIGHT SIZE AND SHAPE, IT'S BENT FAR TO MUCH TO ALLOW ACCESS. MAYBE IT COULD BE RESHAPED SOMEHOW?")
+                        continue
+                #-----------------------------------------------------------
                 #code door exeption-----------------------------------------
                 if target == "detention_door" and current_room == "detention_junction":
                     typing("ENTER THE PIN CODE.")
@@ -2676,8 +2924,14 @@ while True:
                 typing("\nOBJECTS MAPPED!")
             elif target == "items":
                 typing("MAPPING ITEMS:\n")
+                typing("TOTAL ITEMS:\n")
                 for item in master_items:
-                    typing("-"+item)
+                    typing("-" + item)
+                typing("\nCURRENTLY IN DUNGEON:\n")
+                for room in dungeon:
+                    if len(dungeon[room]["items"]) > 0:
+                        for obj in dungeon[room]["items"]:
+                            typing(obj + " IN " + room)
                 typing("\nITEMS MAPPED!")
             elif target == "exits":
                 typing("MAPPING EXITS:\n")
@@ -2770,6 +3024,12 @@ while True:
                             devobject["contains"] = None
                         typing("\n-OPENED " + obj_to_open)
             typing("\nOBJECTS OPENED!")
+
+        elif command == "devlight":
+            devlit = True
+            lighter_lit = True
+            lighter_is_lit = True
+            typing("\nDUNGEON LIT!")
 
         elif action == "devdie" and devmode == True:
             ending = "death"
@@ -2872,11 +3132,13 @@ while True:
     if god == True:
         if ending == "death":
             playing = True
+            dungeon[current_room]["visited"] = True
             current_room = previous_room
             typing("-GOD MODE SAVED YOU FROM DYING! YOU HAVE BEEN PUT BACK IN THE PREVIOUS ROOM!-")
             continue
         elif ending == "capture":
             playing = True
+            dungeon[current_room]["visited"] = True
             current_room = previous_room
             typing("-GOD MODE SAVED YOU FROM BEING CAPTURED! YOU HAVE BEEN PUT BACK IN THE PREVIOUS ROOM!-")
             continue
