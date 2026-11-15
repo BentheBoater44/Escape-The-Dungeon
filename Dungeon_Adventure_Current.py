@@ -1,5 +1,5 @@
 import sys, time, textwrap, os, copy, random, json, glob        #    ---------TO-DO-----------
-                                                                #   add cheese room and powered room                    descriptions    /add lore
+                                                                #    shaking/powered room                    descriptions    /add lore
 def typing(text):
     terminal_size = os.get_terminal_size().columns
     wrap_width = terminal_size - 4
@@ -63,8 +63,8 @@ def loading_bar(message, total_time):
 playing = True
 instructions = True
 current_room = "generator_room"
-inventory = ["lighter", "oil", "seeds","reshaped_key"]
-switch_active = True
+inventory = ["lighter", "oil", "seeds","reshaped_key", "hat"]
+switch_active = False # generator active
 lighter_lit = False
 lighter_is_lit = False
 ending = ""
@@ -99,6 +99,9 @@ danger_zone2_Backup = ["max_security_west", "max_security", "max_security_east",
 
 danger_zone1 = ["industrial_junction", "vent_room", "boiler_room", "water_room", "translator_room", "tight_corridor", "dull_room", "guard_office_1", "workshop"]
 danger_zone2 = ["max_security_west", "max_security", "max_security_east", "guard_office_2", "contraband_room", "dig_checkpoint"]
+
+shaking_rooms1 = ["generator_room", "broken_corridor", "collapsed_office", "sweltering_cave", "hot_cave", "cheese_room"]
+shaking_rooms2 = ["tight_squeeze_cavern", "collapsed_cavern", "rocky_cavern", "musty_cavern"]
 
 #Ranks Dictionary + endings--------------------------Ranks Dictionary + endings----------------------
 ranks = {
@@ -375,6 +378,17 @@ master_items = {
         "name" : "A GREEN NOTEPAD",
         "weight" : "light",
         "examine" : "IT'S AN A6 GREEN NOTEPAD, ON ONE PAGE IS WRITTEN: 'TELL DAVE ABOUT ESCAPE ATTEMPT. CELLS A4, A6 AND A13, VANISHED WITHOUT TRACE.'"
+        },
+    "cheese" : {
+        "name" : "SOME CHEESE",
+        "weight" : "light",
+        "examine" : "IT'S A BLOCK OF MYSTERY CHEESE. SMELLS NICE HUH?",
+        "scoring" : {
+            "scored" : False,
+            "score" : 10,
+            "secret" : True,
+            "discovery" : False
+                },
         },
 
     }
@@ -1426,7 +1440,7 @@ dungeon = {
         "dark" : True,
         "name" : "THE GENERATOR ROOM.",
         "desc" : "IT IS TOO DARK TO SEE ANYTHING.",
-        "desc_lit" : "YOU ARE IN A LARGE, CAVERNOUS ROOM WITH A COUPLE OF SMALL, INSIGNIFICANT EXITS...\nAND THERE, IN THE VERY CENTRE, SITS THE MONSTROUS GENERATOR THAT POWERS THE WHOLE DUNGEON. OUT OF THE MANY VENTS BRANCHING OFF IT, ONLY ONE HAS A WEAK PUFF OF EXHAUST ESCAPING FROM IT EVERY FEW SECONDS. TITANIC PIPES HISS ALMOST SILENTLY, EXTENDING OFF INTO HUGE PISTON CYLINDERS. THE REST OF THE ROOM LIES STILL, AS IF WAITING. A MASSIVE CONTROL PANEL IS POSITIONED AT THE OTHER END OF THE ROOM, FACING DIRECTLY AT THE TREMENDOUS MACHINE. SOMETHING ISN'T RIGHT...",
+        "desc_lit" : "YOU ARE IN A LARGE, CAVERNOUS ROOM WITH TWO SMALL, INSIGNIFICANT EXITS...\nAND THERE, IN THE VERY CENTRE, SITS THE MONSTROUS GENERATOR THAT POWERS THE WHOLE DUNGEON. OUT OF THE MANY VENTS BRANCHING OFF IT, ONLY ONE HAS A WEAK PUFF OF EXHAUST ESCAPING FROM IT EVERY FEW SECONDS. TITANIC PIPES HISS ALMOST SILENTLY, EXTENDING OFF INTO HUGE PISTON CYLINDERS. THE REST OF THE ROOM LIES STILL, AS IF WAITING. A MASSIVE CONTROL PANEL IS POSITIONED AT THE OTHER END OF THE ROOM, FACING DIRECTLY AT THE TREMENDOUS MACHINE. SOMETHING ISN'T RIGHT...",
         "visited" : False,
         "exits" : {"n" : "broken_corridor",
                    "e" : "cheese_room"},
@@ -1440,6 +1454,22 @@ dungeon = {
 
             },
         "items" : {},
+        },
+
+    "cheese_room" : {
+        "dark" : True,
+        "name" : "THE CHESSE ROOM.",
+        "desc" : "IT IS TOO DARK TO SEE ANYTHING.",
+        "desc_lit" : "YOU ARE IN A SMALL, SUPRISINGLY INTACT ROOM WHICH SMELLS VERY STRONGLY OF CHEESE. ON A TABLE IN THE FAR CORNER THERE IS A WHOLE COLLECTION; FETA, CHEDDAR, MOZZARELLA, PARMESAN, STILTON, RED LEICESTER, BRIE AND DOUBLE GLOUCESTER. THE OVERWHELMING ODOUR TRAVELS TO EVERY INCH OF THE CHAMBER. THERE IS A LARGE SIGN ON THE WALL THAT READS: 'PLEASE DO NOT TOUCH THE CHEESE.'",
+        "visited" : False,
+        "exits" : {"w" : "generator_room"},
+        "objects" : {},
+        "items" : {
+            "cheese" : {
+                "name" : "SOME CHEESE",
+                "hidden_in" : None
+                },
+            },
         },
     }
 
@@ -1717,6 +1747,12 @@ while True:
                     guard_in_room = False
                     break
 
+        if switch_active == True:
+            if current_room in shaking_rooms1:
+                typing("\nTHE WHOLE ROOM IS SHAKING VIOLENTLY.")
+            else:
+                typing("\nTHE ROOM IS SHAKING SLIGHTLY.")
+
         if "hat" not in inventory:
             miner_moved = False
 
@@ -1747,8 +1783,9 @@ while True:
             target = ""
 
                                                                         #Target redirector
-        if target == "sign" and current_room == "huge_room" or target == "signpost" and current_room == "huge_room":
-            target = "board"
+        if target in ["sign", "signpost"]:
+            if current_room == "huge_room":
+                target = "board"
         if target in ["workbenches", "forge", "forges", "anvil", "anvils", "equipment", "tools", "tool"] and current_room == "workshop":
             target = "workbench"
         if target == "drawer":
@@ -1818,7 +1855,7 @@ while True:
 
 
                                                                         #Uninteractable objects:
-        if target in ["sheet", "bedsheet", "sheets", "bedsheets", "stains", "poster", "torch", "torches", "equipment", "stream"]:
+        if target in ["sheet", "bedsheet", "sheets", "bedsheets", "stains", "poster", "torch", "torches", "equipment", "stream",]:
             if target in dungeon[current_room]["objects"]:
                 typing("YOU CANNOT INTERACT WITH THAT.")
             else:
@@ -2367,13 +2404,16 @@ while True:
                                     time.sleep(0.5)
                                     typing("\nWITH A GROAN AND A SUDDEN SPLUTTER, THE GENERATOR BURSTS TO LIFE, ALMOST RUPTURING YOUR EARDRUMS AS THE IMMENSE SOUND BOOMS THROUGH THE WHOLE CHAMBER. HUGE PLUMES OF SMOKE AND EXHAUST ARE COUGHED OUT OF THE VENTS AT AN EXTREME RATE. IF THE DUNGEON DIDN'T HAVE ENOUGH POWER BEFORE, IT CERTAINLY DOES NOW.")
                                     discover(50, False, None)
-                                    switch_active = True
+                                    switch_active = True #generator active
                                     fixing_gen = False
                                 else:
                                     if breaker_done == False:
                                         typing("A LARGE RED WARNING LIGHT COMES ON AND AN ALARM BEEPS FOR A SECOND. THE BREAKER HAS COME BACK ON. A FUSE MUST BE BLOWN.")
                                     else:
                                         typing("A SMALL RED WARNING LIGHT COMES ON. YOU HAVEN'T DONE SOMETHING RIGHT.")
+
+                            elif action in ["examine", "ex", "x", "inspect", "search", "take", "pick", "pickup", "grab", "collect", "steal", "give", "g" "drop", "discard", "leave", "place", "toss", "dump", "unlock","enter", "hide", "conceal", "duck", "n", "s", "e", "w", "u", "d", "save", "load", "quit"]:
+                                typing("SORRY, YOU CANNOT USE THAT COMMAND NOW.")
 
                             else:
                                 typing("SORRY, I DON'T UNDERSTAND THAT COMMAND. MAKE SURE YOU'RE TYPING THE RIGHT THING. IF YOU THINK YOU ARE, TRY A DIFFERENT WORD COMBINATION.")
@@ -2822,14 +2862,17 @@ while True:
                 continue
             elif target == "lighter":
                 if target in inventory:
-                    if "oil" in inventory:
-                        typing("YOU LIGHT THE LIGHTER USING THE OIL!")
-
-                        inventory.remove("oil")
-                        lighter_is_lit = True
-                        master_items["lighter"]["used"] = True
+                    if lighter_is_lit == True:
+                        typing("IT'S ALREADY LIT!")
                     else:
-                        typing("YOU HAVE NOTHING TO LIGHT IT WITH.")
+                        if "oil" in inventory:
+                            typing("YOU LIGHT THE LIGHTER USING THE OIL!")
+
+                            inventory.remove("oil")
+                            lighter_is_lit = True
+                            master_items["lighter"]["used"] = True
+                        else:
+                            typing("YOU HAVE NOTHING TO LIGHT IT WITH.")
                 else:
                     typing("YOU DON'T HAVE THE LIGHTER.")
 
@@ -3027,10 +3070,13 @@ while True:
             typing("\nOBJECTS OPENED!")
 
         elif command == "devlight":
-            devlit = True
-            lighter_lit = True
-            lighter_is_lit = True
-            typing("\nDUNGEON LIT!")
+            if dev_lit == False:
+                devlit = True
+                lighter_lit = True
+                lighter_is_lit = True
+                typing("\nDUNGEON LIT!")
+            else:
+                typing("DUNGEON IS ALREADY LIT!")
 
         elif action == "devdie" and devmode == True:
             ending = "death"
@@ -3135,13 +3181,13 @@ while True:
             playing = True
             dungeon[current_room]["visited"] = True
             current_room = previous_room
-            typing("-GOD MODE SAVED YOU FROM DYING! YOU HAVE BEEN PUT BACK IN THE PREVIOUS ROOM!-")
+            typing("--GOD MODE SAVED YOU FROM DYING! YOU HAVE BEEN PUT BACK IN THE PREVIOUS ROOM!--")
             continue
         elif ending == "capture":
             playing = True
             dungeon[current_room]["visited"] = True
             current_room = previous_room
-            typing("-GOD MODE SAVED YOU FROM BEING CAPTURED! YOU HAVE BEEN PUT BACK IN THE PREVIOUS ROOM!-")
+            typing("--GOD MODE SAVED YOU FROM BEING CAPTURED! YOU HAVE BEEN PUT BACK IN THE PREVIOUS ROOM!--")
             continue
         elif ending == "quit":
             continue
