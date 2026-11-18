@@ -1990,7 +1990,7 @@ while True:
                 target = "board"
         if target in ["workbenches", "forge", "forges", "anvil", "anvils", "equipment", "tools", "tool"] and current_room == "workshop":
             target = "workbench"
-        if target == "drawer":
+        if target in ["drawer","chest"]:
             target = "drawers"
         if target in ["plate", "sheet"] and current_room == "workshop":
             target = "workshop_door"
@@ -2008,7 +2008,7 @@ while True:
 
         if target in ["control"] and current_room == "generator_room":
             target = "panel"
-        if action == "flick" and target == "switch":
+        if action in ["flick", "press", "switch"] and target == "switch":
             action = "examine"
         if target in ["computer", "pc", "device", "computers", "pcs", "devices", "laptop", "laptops"] and current_room in ["monitor_room", "guard_office_3"]:
             typing("YOU CANNOT INTERACT WITH THAT.")
@@ -2068,7 +2068,7 @@ while True:
             action = "examine"
             target = "panel"
                                                                         #Uninteractable objects:
-        if target in ["sheet", "bedsheet", "sheets", "bedsheets", "stains", "poster", "torch", "torches", "equipment", "stream",]:
+        if target in ["sheet", "bedsheet", "sheets", "bedsheets", "stains", "poster", "torch", "torches", "equipment", "stream","plastic","scraps",]:
             if target in dungeon[current_room]["objects"]:
                 typing("YOU CANNOT INTERACT WITH THAT.")
             else:
@@ -2465,11 +2465,11 @@ while True:
                                         typing("NOTHING HAPPENS.")
                                         if dungeon[current_room]["objects"][target]["scoring"]["scored"] == False:
                                             discover(
-                                                obj_data["scoring"]["score"],
-                                                obj_data["scoring"]["secret"],
-                                                obj_data["scoring"]["discovery"],
+                                                dungeon[current_room]["objects"]["switch"]["scoring"]["score"],
+                                                dungeon[current_room]["objects"]["switch"]["scoring"]["secret"],
+                                                dungeon[current_room]["objects"]["switch"]["scoring"]["discovery"],
                                                 )
-                                            obj_data["scoring"]["scored"] = True
+                                            dungeon[current_room]["objects"]["switch"]["scoring"]["scored"] = True
                                         break
                                 elif flick_mysterious_switch == "n":
                                     typing("OK.")
