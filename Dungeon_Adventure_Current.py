@@ -1,5 +1,5 @@
 import sys, time, textwrap, os, copy, random, json, glob        #    ---------TO-DO-----------
-                                                                #add to warden interaction           /add lore e.g. maintenance_room
+
 def typing(text):
     terminal_size = os.get_terminal_size().columns
     wrap_width = terminal_size - 4
@@ -89,6 +89,7 @@ miner_moved = False
 left_dig_site = False
 fixing_gen = False
 warden_count = -1
+sky_truth_discovered = False
 
 devlit = False
 devmode = False
@@ -910,7 +911,7 @@ dungeon = {
         "visited" : False,
         "exits" : {"w" : "wide_hall"},
         "objects" : {"desk" : {
-            "examine" : "IT'S A WOODEN DESK."
+            "examine" : "IT'S A WOODEN DESK. ON IT IS A NOTE THAT READS: '-------MAINTENANCE LOG-------\n\n-FIXED LED LIGHTING IN PIGEON ROOM GRATE, IT LOOKS LIKE NATURAL LIGHT NOW.'"
             },
         },
         "items" : {},
@@ -1888,7 +1889,8 @@ while True:
             elif warden_count == 1:
                 typing("WHAT DO YOU DO????")
 
-
+        if current_room == "pigeon_room" and sky_truth_discovered == True:
+            typing("\nTHE SKYLIGHT IS FLICKERING SLIGHTLY.")
 
 
 
@@ -2510,6 +2512,13 @@ while True:
                             continue
                         else:
                             typing("THE MAN BLOCKS YOUR PATH. 'I'M SORRY MATE, NO HARD HAT, NO ENTRY. THAT'S THE RULES I'M AFRAID.'")
+                #-----------------------------------------------------------------
+                #maintenance exeption---------------------------------------------
+                if current_room == "maintenance_room" and target == "desk":
+                    sky_truth_discovered = True
+                    discover(10, True, "THE TRUTH ABOUT THE SUN  -  FIND OUT WHAT THE SKYLIGHT REALLY IS")
+                    dungeon["pigeon_room"]["desc"] = "YOU ARE IN A VERY TALL BUT NARROW ROOM WITH A SMALL GRATE IN THE CEILING LETTING A TINY AMOUNT OF 'SUNLIGHT' IN. YOU NOTICE IT'S FLICKERING SLIGHTLY. THE ONLY OTHER NOTABLE THING IN THE ROOM IS A METAL POLE ON WHICH A SMALL PIGEON SITS."
+                    dungeon["pigeon_room"]["objects"]["grate"]["examine"] =  "IT IS A SMALL METAL GRATE THROUGH WHICH YOU CAN SEE FAKE SUNLIGHT POURING IN. YOU COULD'VE BEEN TRICKED THAT IT WAS REAL EARLIER."
                 #-----------------------------------------------------------------
                 #generator exeption-----------------------------------------------
                 if target == "panel":
