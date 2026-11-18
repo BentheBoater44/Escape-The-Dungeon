@@ -1,5 +1,5 @@
 import sys, time, textwrap, os, copy, random, json, glob        #    ---------TO-DO-----------
-                                                                #add to security_hall area           /add lore e.g. maintenance_room
+                                                                #add to warden interaction           /add lore e.g. maintenance_room
 def typing(text):
     terminal_size = os.get_terminal_size().columns
     wrap_width = terminal_size - 4
@@ -62,8 +62,8 @@ def loading_bar(message, total_time):
 #variables                              variables
 playing = True
 instructions = True
-current_room = "cell"
-inventory = []
+current_room = "security_hall_east"
+inventory = ["lighter", "oil", "hat"]
 switch_active = False # generator active
 lighter_lit = False
 lighter_is_lit = False
@@ -88,6 +88,7 @@ guard_distracted = False
 miner_moved = False
 left_dig_site = False
 fixing_gen = False
+warden_count = -1
 
 devlit = False
 devmode = False
@@ -499,7 +500,7 @@ dungeon = {
              "switch" : {
                  "examine" : "THE PLASTIC SWITCH IS LOOSELY SCREWED ONTO THE GRIMY WALLS. DO YOU WANT TO FLICK THE SWITCH? Y OR N.",
                  "scoring" : {
-                     "score" : 10,
+                     "score" : 0,
                      "secret" : False,
                      "discovery" : "WHAT DOES THIS DO?  -  FIND THE HIDDEN SWITCH",
                      "scored" : False
@@ -1539,6 +1540,15 @@ dungeon = {
         "objects" : {},
         "items" : {},
         },
+    "warden_room" : {
+        "name" : "THE WARDEN ROOM.",
+        "desc" : "YOU ARE IN THE WARDEN ROOM. THE WARDEN IS IN HERE WITH YOU. AS YOU FRANTICALLY SEARCH THE ROOM WITH YOUR EYES, YOU SEE A POSTER ON THE WALL OF A CHAMPER POT WITH A BIG CROSS THROUGH IT.",
+        "visited" : False,
+        "exits" : {},
+        "blocked_exits" : {"w" : "THE DOOR IS LOCKED."},
+        "objects" : {"warden" : {"examine" : "IT'S THE WARDEN!"},},
+        "items" : {},
+        },
     }
 
 def power_rooms():
@@ -1614,6 +1624,15 @@ while True:
 
 
 
+        if warden_count == 0:
+            typing("THE WARDEN REACHES YOU AND KNOCKS YOU OUT WITH A BATON!\n\nAS YOUR MIND GOES FUZZY, YOU SWEAR YOU CAN HEAR HIM MUTTER: 'AT LEAST HE DIDN'T HAVE A CHAMBER POT.'")
+            ending = "death"
+            playing = False
+            break
+
+        if warden_count > 0:
+            warden_count -= 1
+
         if is_hidden != current_room:
             is_hidden = False
 
@@ -1637,7 +1656,13 @@ while True:
         if "pincode" in inventory:
             inventory.remove("pincode")
 
-
+        if current_room == "warden_room" and dungeon["warden_room"]["visited"] == False:
+            guard_in_room = False
+            guard_alert = 0
+            dungeon["warden_room"]["visited"] = True
+            typing("YOU ENTER A HUGE ROOM, THE FRONT DOOR TO THE DUNGEON IS SPOTTED ON THE FAR WESTERN WALL UNDER A LARGE BALCONY AND BEHIND THE LARGE STAIRCASE. A MASSIVE, MARBLE THRONE SITS DIRECTLY ABOVE THE STAIRS, IN THE CENTRE. SITTING ON THE MIGHTY CHAIR IS THE MAN HIMSELF.\nTHE WARDEN.\n\n'SO, YOU HAVE MADE IT HERE. YOU WISH TO ESCAPE I IMAGINE, THROUGH THE MAIN EXIT!' HE SAYS IN A MILDLY ENTERTAINED VOICE.\n\nA SMALL FIRE ESCAPE SIGN ABOVE THE DOOR FLICKERS FOR A MOMENT.\n\n'SORRY, BUT I CANNOT ALLOW THAT.' HE GETS UP AND STARTS WALKING TOWARDS YOU!\n\n" + '\033[97m' + "\nI'D ESTIMATE YOU ONLY HAVE ABOUT THREE TURNS BEFORE HE REACHES YOU."+ '\033[0m')
+            warden_count = 3
+            time.sleep(2)
 
         if current_room == "thug_room" and met_prisoners == False:
             typing("AS YOU TURN THE CORNER, YOU WALK INTO A HIDEOUT WITH FIVE FIGURES IN TORN, DIRTY CLOTHES LOUNGING AROUND. THEY ALL JUMP UP IN ALERT. THE TALLEST ONE DRAWS HIS SWORD AND CHALLENGES YOU TO A DUEL!")
@@ -1661,7 +1686,7 @@ while True:
                 "hidden_in" : None
                 }
             else:
-                typing("THE FIGURES LOOK AT YOU, CONFUSED BY YOUR ACCENT. YOU TAKE THIS OPPORTUNITY TO LEAVE THE ROOM SWIFTLY.\n\n(MAYBE NEXT TIME TYPE EITHER Y OR N.)")
+                typing("THE FIGURES LOOK AT YOU, CONFUSED BY YOUR ACCENT. YOU TAKE THIS OPPORTUNITY TO LEAVE THE ROOM SWIFTLY.\n\n(MAYBE NEXT TIME TYPE EITHER 'Y' OR 'N'.)")
                 current_room = "meeting_secret_passage"
                 continue
         if lighter_is_lit == True and "lighter" in inventory or devlit == True:
@@ -1855,7 +1880,13 @@ while True:
         if "hat" not in inventory:
             miner_moved = False
 
-
+        if current_room == "warden_room":
+            if warden_count == 3:
+                typing("WHAT DO YOU DO??")
+            elif warden_count == 2:
+                typing("WHAT DO YOU DO???")
+            elif warden_count == 1:
+                typing("WHAT DO YOU DO????")
 
 
 
@@ -1880,6 +1911,48 @@ while True:
             target = words[1]
         else:
             target = ""
+
+
+        if current_room == "warden_room":                            #warden exceptions
+            if target == "warden":
+                if action in ["examine", "ex", "x", "inspect", "read", "check", "search"]:
+                    action = "examine"
+                elif action in ["attack", "fight", "assult", "assail", "hurt", "batter", "bust", "beat", "kill", "murder", "strike", "hit"]:
+                    if "pot" in inventory or "pot" in dungeon[current_room]["items"]:
+                        typing("YOU SEIZE YOUR CHAMBER POT AND THROW IT DIRECTLY AT THE WARDEN'S HEAD! HE FREEZES IN TERROR AND THE POT STRIKES HIM, SHATTERING BOTH ITSELF AND THE WARDEN")
+                        time.sleep(2)
+                        typing("\nYOU QUICKLY MAKE YOUR WAY TO THE FRONT DOOR OF THE DUNGEON AND IT OPENS INTO A CRAMPED ELEVATOR. WITH GREAT ENERGY, YOU PRESS THE GROUND FLOOR BUTTON AND START RACING UPWARDS THROUGH THE DARKNESS.")
+                        time.sleep(2)
+                        ending = "escape"
+                        discover(20, False, None)
+                        playing = False
+                        break
+                    else:
+                        typing("YOU DON'T HAVE IT!")
+                        continue
+                else:
+                    typing("YOU CANNOT INTERACT WITH HIM IN THAT WAY.")
+                    warden_count += 1
+                    continue
+            elif action in ["throw", "use", "drop", "toss", "hurl", "fling", "chuck", "launch", "bowl",] and target in ["chamber", "pot"]:
+                if "pot" in inventory or "pot" in dungeon[current_room]["items"]:
+                    typing("YOU SEIZE YOUR CHAMBER POT AND THROW IT DIRECTLY AT THE WARDEN'S HEAD! HE FREEZES IN TERROR AND THE POT STRIKES HIM, SHATTERING BOTH ITSELF AND THE WARDEN!")
+                    time.sleep(2)
+                    typing("\nYOU QUICKLY MAKE YOUR WAY TO THE FRONT DOOR OF THE DUNGEON AND IT OPENS INTO A CRAMPED ELEVATOR. WITH GREAT ENERGY, YOU PRESS THE GROUND FLOOR BUTTON AND START RACING UPWARDS THROUGH THE DARKNESS.")
+                    time.sleep(2)
+                    ending = "escape"
+                    discover(20, False, None)
+                    playing = False
+                    break
+                else:
+                    typing("YOU DON'T HAVE IT!")
+                    continue
+            elif action in ["hide", "duck", "conceal"]:
+                typing("THERE'S NO HIDING FROM THE WARDEN!")
+                continue
+            elif action in ["run", "escape", "leave", "exit", "scarper"]:
+                typing("THERE'S NO RUNNING FROM THE WARDEN!")
+                continue
 
                                                                         #Target redirector
         if target in ["sign", "signpost"]:
@@ -1957,6 +2030,9 @@ while True:
             else:
                 typing("YOU DON'T HAVE A HAT!")
                 continue
+        if command == "escape":
+            typing("WOULDN'T THAT BE NICE?")
+            continue
 
         if action in ["fix", "repair"] and target == "generator" and current_room == "generator_room":
             action = "examine"
@@ -1968,6 +2044,9 @@ while True:
             else:
                 typing("I SEE NO " + target.upper() + " HERE!  ARE YOU SURE YOU ARE USING THE CORRECT NAME?")
                 continue
+
+        if action in ["throw", "use", "hurl", "fling", "chuck", "launch", "bowl",] and target in ["pot", "chamber"] and "pot" in inventory:
+            typing("THE WARDEN ISN'T HERE!")
 
         if target in ["pipes", "pipe"]:
             if current_room in ["water_room", "boiler_room"]:
@@ -2074,7 +2153,7 @@ while True:
             else:
                 typing("YOU CAN'T FILL THAT.")
 
-        elif action in ["drink", "consume", "chug", "swallow"]:                         #drink
+        elif action in ["drink", "consume", "chug", "swallow", "eat"]:                #consume
             if target in inventory or target in dungeon[current_room]["objects"] or target in dungeon[current_room]["items"]:
                 if target == "water" and ("water" in inventory) or (current_room == "water_room"):
                     typing("YOU DRINK THE WATER. IT TASTES STALE.")
@@ -2083,6 +2162,13 @@ while True:
                         inventory.append("bottle")
                 elif target == "oil":
                     typing("I'M SORRY, HAVE YOU GONE MAD?")
+                elif target == "chocolate":
+                    typing("YOU EAT THE CHOCOLATE BAR. YOU ARE SUDDENLY ENGULFED IN A HUGE WAVE OF ENERGY, READY TO TAKE ON THE DUNGEON.")
+                    discover(10, False, None)
+                    if "chocolate" in inventory:
+                        inventory.remove("chocolate")
+                    else:
+                        dungeon[current_room]["items"].remove("chocolate")
                 elif target == "pigeon" and "pigeon" in inventory or "pigeon" in dungeon[current_room]["items"]:
                     typing("THE PIGEON DOES'T LOOK PARTICULARLY KEEN ON THAT IDEA.")
                 else:
@@ -2095,6 +2181,7 @@ while True:
 
         elif command in ["sit", "rest", "sleep",]:
             typing("YOU TIRED? COME ON, YOU'VE GOT A DUNGEON TO ESCAPE FROM!")
+
         #Movement--------------------------------------------------------#Movement-------
 
 
@@ -2103,13 +2190,18 @@ while True:
             #dig site exeption---------------------------------------------
             if current_room == "dig_site" and left_dig_site == False:
                 typing("ONE OF THE WORKERS COMES UP TO YOU AND BLOCK YOUR PATH.\n\n'YOU CAN'T GO THROUGH THERE! IT'S UNSTABLE. WE STLL HAVEN'T HEARD BACK FROM THE MINER'S UNION AS TO IF WE'RE ALLOWED THROUGH!'\n\nDO YOU WISH TO PROCEED ANYWAY? Y/N")
-                miner_choice = input("\n> ").lower().strip()
-                if miner_choice == "y":
-                    typing("YOU HEED NO WARNING GIVEN, AND MARCH STRAIGHT ON THROUGH, PAST THE MINERS NOW JUST LOOKING AT YOU AND SHAKING THEIR HEADS. YOU KICK A TRAFFIC CONE OUT OF YOUR WAY AND STRIDE OUT OF THE CAVERN, NOT LOOKING BACK.")
-                    left_dig_site = True
-                else:
-                    typing("THE MINER SMILES AT YOU AND GOES BACK TO EATING HIS SANDWICH.")
-                    continue
+                while True:
+                    miner_choice = input("\n> ").lower().strip()
+                    if miner_choice == "y":
+                        typing("YOU HEED NO WARNING GIVEN, AND MARCH STRAIGHT ON THROUGH, PAST THE MINERS NOW JUST LOOKING AT YOU AND SHAKING THEIR HEADS. YOU KICK A TRAFFIC CONE OUT OF YOUR WAY AND STRIDE OUT OF THE CAVERN, NOT LOOKING BACK.")
+                        left_dig_site = True
+                        break
+                    elif miner_choice == "n":
+                        typing("THE MINER SMILES AT YOU AND GOES BACK TO EATING HIS SANDWICH.")
+                        break
+                    else:
+                        typing("THAT'S NOT A VALID ANSWER. PLEASE TYPE 'Y' OR 'N'.")
+
 
             #--------------------------------------------------------------
             if "n" in dungeon[current_room]["exits"]:
@@ -2164,6 +2256,22 @@ while True:
                     typing("THE PASSAGE IS TOO TIGHT FOR YOU TO FIT THROUGH. YOU MIGHT NEED TO DROP SOMETHING FIRST.")
                     continue
             #--------------------------------------------------------------
+            #warden exception---------------------------------------------------------
+            if current_room == "security_hall_east":
+                typing("ARE YOU COMPLETELY SURE YOU WISH TO ENTER? Y/N")
+                while True:
+                    choice = input("\n> ").strip().lower()
+                    if choice == "y":
+                        previous_room = current_room
+                        current_room = dungeon[current_room]["exits"]["e"]
+                        break
+                    if choice == "n":
+                        typing("OK.")
+                        break
+                    else:
+                        typing("THAT'S NOT A VALID ANSWER. PLEASE TYPE 'Y' OR 'N'.")
+                continue
+            #-------------------------------------------------------------------------
             if "e" in dungeon[current_room]["exits"]:
                 if "dark" in dungeon[current_room] and dungeon[current_room]["dark"] == True and lighter_lit == False:
                     dest = dungeon[current_room]["exits"]["e"]
@@ -2243,7 +2351,7 @@ while True:
 
         #----------------------------------------------------------------------------------
 
-        elif command == "help":                                        #Help Command
+        elif command in ["help", "hint"]:                                        #Help Command
             typing(Help)
 
         elif command == "inventory":                                   #Inventory Command
@@ -2277,7 +2385,7 @@ while True:
 
 
 
-        elif action in ["examine", "ex", "x", "inspect", "read", "check", "search",]: #Examine command
+        elif action in ["examine", "ex", "x", "inspect", "read", "check", "search",]:#Examine command
             if target == "":
                 if len(dungeon[current_room]["objects"]) == 1:
                     target = list(dungeon[current_room]["objects"].keys())[0]
@@ -2310,73 +2418,82 @@ while True:
                             continue
                         else:
                             typing(dungeon["east_cell_corridor"]["objects"]["switch"]["examine"])
-                            flick_mysterious_switch = input("\n> ").lower().strip()
+                            while True:
+                                flick_mysterious_switch = input("\n> ").lower().strip()
+                                if flick_mysterious_switch == "y":
+                                    if switch_active == True:
+                                        if switch_used == False:
+                                            typing("YOU FLICK THE SWITCH AND HEAR A WHIRRING MOTOR START UP. YOU HEAR THE ECHO OF GEARS GRINDING IN THE DISTANCE. AS YOU LOOK TOWARDS THE HEAVY DUTY DOOR TO YOUR EAST, YOU SEE IT SLOWLY SWING OPEN. THROUGH THE DOORWAY YOU SEE INTO A BRIGHTLY LIT HALL.")
+                                            dungeon["east_cell_corridor"]["exits"]["e"] = "security_hall_west"
+                                            discover(40, False, "AH, THAT'S WHAT IT'S FOR!  -  SWITCH THE SWITCH WHEN IT'S ACTIVE")
+                                            switch_used = True
+                                            break
 
-                            if flick_mysterious_switch == "y":
-                                if switch_active == True:
-                                    if switch_used == False:
-                                        typing("YOU FLICK THE SWITCH AND HEAR A WHIRRING MOTOR START UP. YOU HEAR THE ECHO OF GEARS GRINDING IN THE DISTANCE. AS YOU LOOK TOWARDS THE HEAVY DUTY DOOR TO YOUR EAST, YOU SEE IT SLOWLY SWING OPEN. THROUGH THE DOORWAY YOU SEE INTO A BRIGHTLY LIT HALL.")
-                                        dungeon["east_cell_corridor"]["exits"]["e"] = "security_hall_west"
-                                        discover(40, False, "AH, THAT'S WHAT IT'S FOR!  -  SWITCH THE SWITCH WHEN IT'S ACTIVE")
-                                        switch_used = True
-                                        continue
-
+                                    else:
+                                        typing("NOTHING HAPPENS.")
+                                        if dungeon[current_room]["objects"][target]["scoring"]["scored"] == False:
+                                            discover(
+                                                obj_data["scoring"]["score"],
+                                                obj_data["scoring"]["secret"],
+                                                obj_data["scoring"]["discovery"],
+                                                )
+                                            obj_data["scoring"]["scored"] = True
+                                        break
+                                elif flick_mysterious_switch == "n":
+                                    typing("OK.")
+                                    break
                                 else:
-                                    typing("NOTHING HAPPENS.")
-                                    if dungeon[current_room]["objects"][target]["scoring"]["scored"] == False:
-                                        discover(
-                                            obj_data["scoring"]["score"],
-                                            obj_data["scoring"]["secret"],
-                                            obj_data["scoring"]["discovery"],
-                                            )
-                                        obj_data["scoring"]["scored"] = True
-                                    continue
-                            elif flick_mysterious_switch == "n":
-                                typing("OK.")
-                                continue
-                            else:
-                                typing("THAT IS NOT A VALID OPTION.")
-                                continue
+                                    typing("THAT'S NOT A VALID ANSWER. PLEASE TYPE 'Y' OR 'N'.")
+                                    break
+                            continue
                 #-----------------------------------------------------------------
                 #Steam Whistle exeption-------------------------------------------
                 if target == "tank":
                     typing(dungeon[current_room]["objects"][target]["examine"])
                     typing("DO YOU WANT TO BLOW THE WHISTLE? Y/N")
-                    blowdecision = input("\n> ").strip().lower()
-                    if blowdecision == "y":
-                        if whistle_blown == 0:
-                            typing("TOOT! TOOT!")
-                            discover(50, True, None)
-                            whistle_blown += 1
-                            continue
-                        if whistle_blown == 1:
-                            typing("TOOOOOT!! \n\nSOMEWHERE IN THE DISTANCE A VOICE YELLS 'WOULD YOU STOP THAT?!'")
-                            whistle_blown += 1
-                            continue
-                        if whistle_blown > 1:
-                            typing("TOOT!\n\nYOU HEAR FAINT GRUMBLING IN THE DISTANCE.")
-                            continue
-                    else:
-                        typing("YOU'RE NO FUN.")
-                        continue
+                    while True:
+                        blowdecision = input("\n> ").strip().lower()
+                        if blowdecision == "y":
+                            if whistle_blown == 0:
+                                typing("TOOT! TOOT!")
+                                discover(50, True, None)
+                                whistle_blown += 1
+                                break
+                            if whistle_blown == 1:
+                                typing("TOOOOOT!! \n\nSOMEWHERE IN THE DISTANCE A VOICE YELLS 'WOULD YOU STOP THAT?!'")
+                                whistle_blown += 1
+                                break
+                            if whistle_blown > 1:
+                                typing("TOOT!\n\nYOU HEAR FAINT GRUMBLING IN THE DISTANCE.")
+                                break
+                        elif blowdecision == "n":
+                            typing("YOU'RE NO FUN.")
+                            break
+                        else:
+                            typing("THAT'S NOT A VALID ANSWER. PLEASE TYPE 'Y' OR 'N'.")
+                    continue
                 #-----------------------------------------------------------------
                 #Stool exeption---------------------------------------------------
                 if target == "stool":
                     if stool_up == False:
                         typing(dungeon[current_room]["objects"][target]["examine"])
                         typing("\nDO YOU WANT TO SET THE STOOL UPRIGHT? Y/N")
-                        stool_decision = input("\n>").strip().lower()
-                        if stool_decision == "y":
-                            typing("YOU PICK UP THE STOOL AND AS SOON AS YOU SET IT UPRIGHT, A RED LIGHT ON THE WALL ABOVE YOU STARTS FLASHING AND A HIGH PITCHED SIREN BLASTS SOUND THROUGH THE WHOLE CORRIDOR. SOMEONE MIGHT BE COMING...")
-                            discover(20, False, "OH MY GOD.  -  RE-ADJUST THE TRAPPED STOOL")
-                            stool_up = True
-                            guard_alert = 2
-                            time.sleep(0.5)
-                            guard_distracted = True
-                            continue
-                        else:
-                            typing("OK.")
-                            continue
+                        while True:
+                            stool_decision = input("\n>").strip().lower()
+                            if stool_decision == "y":
+                                typing("YOU PICK UP THE STOOL AND AS SOON AS YOU SET IT UPRIGHT, A RED LIGHT ON THE WALL ABOVE YOU STARTS FLASHING AND A HIGH PITCHED SIREN BLASTS SOUND THROUGH THE WHOLE CORRIDOR. SOMEONE MIGHT BE COMING...")
+                                discover(20, False, "OH MY GOD.  -  RE-ADJUST THE TRAPPED STOOL")
+                                stool_up = True
+                                guard_alert = 2
+                                time.sleep(0.5)
+                                guard_distracted = True
+                                break
+                            elif stool_decision == "n":
+                                typing("OK.")
+                                break
+                            else:
+                                typing("THAT'S NOT A VALID ANSWER. PLEASE TYPE 'Y' OR 'N'.")
+                        continue
                     else:
                         typing("IT'S A METAL STOOL SITTING BESIDE THE BED UNDERNEATH A RED LIGHT.")
                         continue
@@ -2399,141 +2516,146 @@ while True:
                     if switch_active == False:
                         typing(dungeon[current_room]["objects"]["panel"]["examine"])
                         typing("DO YOU WANT TO TRY TO FIX THE GENERATOR? Y/N")
-                        fix_choice = input("\n> ").strip().lower()
-                        if fix_choice == "y":
-                            fixing_gen = True
-                            typing("THE CONTROL PANEL READS:\n")
-                            loading_bar("", 0.3)
-                            typing("---SUPER ULTRA MEGA DIESEL 4004 GENERATOR---\n-LICENCED UNDER BLACKSTONE DUNGEON-\n\n--WARNING: GENERATOR ONLY TO BE USED BY QUALIFIED ENGINEERS!--\n\n-----IN CASE OF EMERGENCY SHUTDOWN-----\n\n-WARNING: BEFORE RESTARTING GENERATOR, CHECK THAT ALL FUSES ARE INTACT AND OPERATIONAL.\n\n-----STARTUP SEQUENCE-----\n\n1- RESET BREAKER\n\n2- PRIME ENGINE\n\n3- ENGAGE STARTER MOTOR\n\n4- OPEN VALVE TO LET FUEL THROUGH\n\n5- INSERT KEY\n\n6- PULL LEVER LABELLED START\n\n-WARNING: IF ANY STEP IS DONE INCORRECTLY, YOU MUST RESET THE BREAKER BEFORE CONTINUING.")
-                            loading_bar("", 0.3)
-                            typing("--IF FUSE HAS BLOWN:--\n\n- REMOVE FUSE\n\n- INSERT FUSE (NEW FUSES CAN BE FOUND IN A COMPARTMENT ON THE LEFT.)\n\n- CONTINUE WITH STARTUP SEQUENCE.")
-                            loading_bar("", 0.3)
+                        while True:
+                            fix_choice = input("\n> ").strip().lower()
+                            if fix_choice == "y":
+                                fixing_gen = True
+                                typing("THE CONTROL PANEL READS:\n")
+                                loading_bar("", 0.3)
+                                typing("---SUPER ULTRA MEGA DIESEL 4004 GENERATOR---\n-LICENCED UNDER BLACKSTONE DUNGEON-\n\n--WARNING: GENERATOR ONLY TO BE USED BY QUALIFIED ENGINEERS!--\n\n-----IN CASE OF EMERGENCY SHUTDOWN-----\n\n-WARNING: BEFORE RESTARTING GENERATOR, CHECK THAT ALL FUSES ARE INTACT AND OPERATIONAL.\n\n-----STARTUP SEQUENCE-----\n\n1- RESET BREAKER\n\n2- PRIME ENGINE\n\n3- ENGAGE STARTER MOTOR\n\n4- OPEN VALVE TO LET FUEL THROUGH\n\n5- INSERT KEY\n\n6- PULL LEVER LABELLED START\n\n-WARNING: IF ANY STEP IS DONE INCORRECTLY, YOU MUST RESET THE BREAKER BEFORE CONTINUING.")
+                                loading_bar("", 0.3)
+                                typing("--IF FUSE HAS BLOWN:--\n\n- REMOVE FUSE\n\n- INSERT FUSE (NEW FUSES CAN BE FOUND IN A COMPARTMENT ON THE LEFT.)\n\n- CONTINUE WITH STARTUP SEQUENCE.")
+                                loading_bar("", 0.3)
 
-                            fuse_check = False
-                            fuse_removed = False
-                            fuse_inserted = False
-                            fuse_done = False
-                            breaker_done = False
-                            prime_done = False
-                            engage_done = False
-                            open_done = False
-                            insert_done = False
-                            pull_done = False
+                                fuse_check = False
+                                fuse_removed = False
+                                fuse_inserted = False
+                                fuse_done = False
+                                breaker_done = False
+                                prime_done = False
+                                engage_done = False
+                                open_done = False
+                                insert_done = False
+                                pull_done = False
 
-                            typing("\nLUCKILY ALL THE BUTTONS ARE LABELLED AND THE KEY'S ALREADY INSERTED. *TYPE 'READ' TO RE-READ THE INSTRUCTIONS AGAIN. USE ONE OR TWO WORD COMMANDS TO CARRY OUT THE NEEDED ACTIONS.")
+                                typing("\nLUCKILY ALL THE BUTTONS ARE LABELLED AND THE KEY'S ALREADY INSERTED. *TYPE 'READ' TO RE-READ THE INSTRUCTIONS AGAIN. USE ONE OR TWO WORD COMMANDS TO CARRY OUT THE NEEDED ACTIONS.")
 
-                            while fixing_gen == True:
+                                while fixing_gen == True:
 
-                                command = input("\n> ").strip().lower()
+                                    command = input("\n> ").strip().lower()
 
-                                words = command.split(" ")              #Sentence Splitter
+                                    words = command.split(" ")              #Sentence Splitter
 
-                                action = words[0]
-                                if len(words) > 1:
-                                    target = words[1]
-                                else:
-                                    target = ""
-
-                                if action in ["read", "help"]:
-                                    typing("THE CONTROL PANEL READS:\n")
-                                    loading_bar("", 0.3)
-                                    typing("---SUPER ULTRA MEGA DIESEL 4004 GENERATOR---\n-LICENCED UNDER BLACKSTONE DUNGEON-\n\n--WARNING: GENERATOR ONLY TO BE USED BY QUALIFIED ENGINEERS!--\n\n-----IN CASE OF EMERGENCY SHUTDOWN-----\n\n-WARNING: BEFORE RESTARTING GENERATOR, CHECK THAT ALL FUSES ARE INTACT AND OPERATIONAL.\n\n-----STARTUP SEQUENCE-----\n\n1- RESET BREAKER\n\n2- PRIME ENGINE\n\n3- ENGAGE STARTER MOTOR\n\n4- OPEN VALVE TO LET FUEL THROUGH\n\n5- INSERT KEY\n\n6- PULL LEVER LABELLED START\n\n-WARNING: IF ANY STEP IS DONE INCORRECTLY, YOU MUST RESET THE BREAKER BEFORE CONTINUING.")
-                                    loading_bar("", 0.3)
-                                    typing("--IF FUSE HAS BLOWN:--\n\n- REMOVE FUSE\n\n- INSERT FUSE (NEW FUSES CAN BE FOUND IN A COMPARTMENT ON THE LEFT.)\n\n- CONTINUE WITH STARTUP SEQUENCE.")
-                                    loading_bar("", 0.3)
-
-                                elif action == "check" and target in ["fuse", "fuses"]:
-                                    if fuse_done != True:
-                                        if fuse_removed == True:
-                                            typing("THERE'S A FUSE MISSING.")
-                                        else:
-                                            typing("AH! A FUSE HAS BLOWN.")
-                                            fuse_check = True
+                                    action = words[0]
+                                    if len(words) > 1:
+                                        target = words[1]
                                     else:
-                                        typing("ALL FUSES ARE FINE!")
+                                        target = ""
 
-                                elif action == "remove" and target in ["fuse", "fuses"]:
-                                    if fuse_check == True:
-                                        if fuse_removed == False:
-                                            typing("BLOWN FUSE REMOVED!")
-                                            fuse_removed = True
-                                        else:
-                                            typing("YOU ALREADY REMOVED THE FUSE.")
-                                    else:
-                                        typing("YOU HAVEN'T CHECKED THEM YET!")
+                                    if action in ["read", "help"]:
+                                        typing("THE CONTROL PANEL READS:\n")
+                                        loading_bar("", 0.3)
+                                        typing("---SUPER ULTRA MEGA DIESEL 4004 GENERATOR---\n-LICENCED UNDER BLACKSTONE DUNGEON-\n\n--WARNING: GENERATOR ONLY TO BE USED BY QUALIFIED ENGINEERS!--\n\n-----IN CASE OF EMERGENCY SHUTDOWN-----\n\n-WARNING: BEFORE RESTARTING GENERATOR, CHECK THAT ALL FUSES ARE INTACT AND OPERATIONAL.\n\n-----STARTUP SEQUENCE-----\n\n1- RESET BREAKER\n\n2- PRIME ENGINE\n\n3- ENGAGE STARTER MOTOR\n\n4- OPEN VALVE TO LET FUEL THROUGH\n\n5- INSERT KEY\n\n6- PULL LEVER LABELLED START\n\n-WARNING: IF ANY STEP IS DONE INCORRECTLY, YOU MUST RESET THE BREAKER BEFORE CONTINUING.")
+                                        loading_bar("", 0.3)
+                                        typing("--IF FUSE HAS BLOWN:--\n\n- REMOVE FUSE\n\n- INSERT FUSE (NEW FUSES CAN BE FOUND IN A COMPARTMENT ON THE LEFT.)\n\n- CONTINUE WITH STARTUP SEQUENCE.")
+                                        loading_bar("", 0.3)
 
-                                elif action in ["insert", "get"] and target in ["fuse", "fuses"]:
-                                    if fuse_check == True:
-                                        if fuse_removed == True:
-                                            if fuse_inserted == False:
-                                                typing("NEW FUSE INSERTED!")
-                                                fuse_inserted = True
-                                                fuse_done = True
+                                    elif action == "check" and target in ["fuse", "fuses"]:
+                                        if fuse_done != True:
+                                            if fuse_removed == True:
+                                                typing("THERE'S A FUSE MISSING.")
                                             else:
-                                                typing("YOU ALREADY INSERTED A NEW FUSE.")
+                                                typing("AH! A FUSE HAS BLOWN.")
+                                                fuse_check = True
                                         else:
-                                            typing("YOU HAVEN'T REMOVED THE BLOWN ONE.")
-                                    else:
-                                        typing("YOU HAVEN'T EVEN CHECKED THE FUSES YET!")
+                                            typing("ALL FUSES ARE FINE!")
 
-
-
-                                elif action == "reset" and target in ["breaker", "breakers"]:
-                                    typing("BREAKER RESET!")
-                                    if fuse_done == True:
-                                        breaker_done = True
-                                    prime_done = False
-                                    engage_done = False
-                                    open_done = False
-                                    insert_done = False
-                                    pull_done = False
-
-                                elif action == "prime" and target in ["engine"]:
-                                    typing("ENGINE PRIMED!")
-                                    prime_done = True
-
-                                elif action == "engage" and target in ["starter", "motor"]:
-                                    typing("STARTER MOTOR ENGAGED!")
-                                    if prime_done == True:
-                                        engage_done = True
-
-                                elif action == "open" and target in ["valve", "fuel"]:
-                                    typing("FUEL VALVE OPENED!")
-                                    if engage_done == True:
-                                        open_done = True
-
-                                elif action in ["insert", "turn"] and target in ["key"]:
-                                    typing("WELL LUCKILY THE KEY'S ALREADY INSERTED. BUT YOU TURN IT TOO.")
-                                    if open_done == True:
-                                        insert_done = True
-
-                                elif action == "pull" and target in ["lever", "switch"]:
-                                    typing("LEVER PULLED!")
-                                    if insert_done == True:
-                                        pull_done = True
-
-                                    if all([breaker_done, prime_done, engage_done, open_done, insert_done, pull_done]) == True:
-                                        time.sleep(0.5)
-                                        typing("\nWITH A GROAN AND A SUDDEN SPLUTTER, THE GENERATOR BURSTS TO LIFE, ALMOST RUPTURING YOUR EARDRUMS AS THE IMMENSE SOUND BOOMS THROUGH THE WHOLE CHAMBER. HUGE PLUMES OF SMOKE AND EXHAUST ARE COUGHED OUT OF THE VENTS AT AN EXTREME RATE. IF THE DUNGEON DIDN'T HAVE ENOUGH POWER BEFORE, IT CERTAINLY DOES NOW.")
-                                        discover(50, False, None)
-                                        switch_active = True #generator active
-                                        fixing_gen = False
-                                        power_rooms()
-                                    else:
-                                        if breaker_done == False:
-                                            typing("A LARGE RED WARNING LIGHT COMES ON AND AN ALARM BEEPS FOR A SECOND. THE BREAKER HAS COME BACK ON. A FUSE MUST BE BLOWN.")
+                                    elif action == "remove" and target in ["fuse", "fuses"]:
+                                        if fuse_check == True:
+                                            if fuse_removed == False:
+                                                typing("BLOWN FUSE REMOVED!")
+                                                fuse_removed = True
+                                            else:
+                                                typing("YOU ALREADY REMOVED THE FUSE.")
                                         else:
-                                            typing("A SMALL RED WARNING LIGHT COMES ON. YOU HAVEN'T DONE SOMETHING RIGHT.")
+                                            typing("YOU HAVEN'T CHECKED THEM YET!")
 
-                                elif action in ["examine", "ex", "x", "inspect", "search", "take", "pick", "pickup", "grab", "collect", "steal", "give", "g" "drop", "discard", "leave", "place", "toss", "dump", "unlock","enter", "hide", "conceal", "duck", "n", "s", "e", "w", "u", "d", "save", "load", "quit"]:
-                                    typing("SORRY, YOU CANNOT USE THAT COMMAND NOW.")
+                                    elif action in ["insert", "get"] and target in ["fuse", "fuses"]:
+                                        if fuse_check == True:
+                                            if fuse_removed == True:
+                                                if fuse_inserted == False:
+                                                    typing("NEW FUSE INSERTED!")
+                                                    fuse_inserted = True
+                                                    fuse_done = True
+                                                else:
+                                                    typing("YOU ALREADY INSERTED A NEW FUSE.")
+                                            else:
+                                                typing("YOU HAVEN'T REMOVED THE BLOWN ONE.")
+                                        else:
+                                            typing("YOU HAVEN'T EVEN CHECKED THE FUSES YET!")
 
-                                else:
-                                    typing("SORRY, I DON'T UNDERSTAND THAT COMMAND. MAKE SURE YOU'RE TYPING THE RIGHT THING. IF YOU THINK YOU ARE, TRY A DIFFERENT WORD COMBINATION.")
-                            continue
-                        else:
-                            typing("OK.")
-                            continue
+
+
+                                    elif action == "reset" and target in ["breaker", "breakers"]:
+                                        typing("BREAKER RESET!")
+                                        if fuse_done == True:
+                                            breaker_done = True
+                                        prime_done = False
+                                        engage_done = False
+                                        open_done = False
+                                        insert_done = False
+                                        pull_done = False
+
+                                    elif action == "prime" and target in ["engine"]:
+                                        typing("ENGINE PRIMED!")
+                                        prime_done = True
+
+                                    elif action == "engage" and target in ["starter", "motor"]:
+                                        typing("STARTER MOTOR ENGAGED!")
+                                        if prime_done == True:
+                                            engage_done = True
+
+                                    elif action == "open" and target in ["valve", "fuel"]:
+                                        typing("FUEL VALVE OPENED!")
+                                        if engage_done == True:
+                                            open_done = True
+
+                                    elif action in ["insert", "turn"] and target in ["key"]:
+                                        typing("WELL LUCKILY THE KEY'S ALREADY INSERTED. BUT YOU TURN IT TOO.")
+                                        if open_done == True:
+                                            insert_done = True
+
+                                    elif action == "pull" and target in ["lever", "switch"]:
+                                        typing("LEVER PULLED!")
+                                        if insert_done == True:
+                                            pull_done = True
+
+                                        if all([breaker_done, prime_done, engage_done, open_done, insert_done, pull_done]) == True:
+                                            time.sleep(0.5)
+                                            typing("\nWITH A GROAN AND A SUDDEN SPLUTTER, THE GENERATOR BURSTS TO LIFE, ALMOST RUPTURING YOUR EARDRUMS AS THE IMMENSE SOUND BOOMS THROUGH THE WHOLE CHAMBER. HUGE PLUMES OF SMOKE AND EXHAUST ARE COUGHED OUT OF THE VENTS AT AN EXTREME RATE. IF THE DUNGEON DIDN'T HAVE ENOUGH POWER BEFORE, IT CERTAINLY DOES NOW.")
+                                            discover(50, False, None)
+                                            switch_active = True #generator active
+                                            fixing_gen = False
+                                            power_rooms()
+                                        else:
+                                            if breaker_done == False:
+                                                typing("A LARGE RED WARNING LIGHT COMES ON AND AN ALARM BEEPS FOR A SECOND. THE BREAKER HAS COME BACK ON. A FUSE MUST BE BLOWN.")
+                                            else:
+                                                typing("A SMALL RED WARNING LIGHT COMES ON. YOU HAVEN'T DONE SOMETHING RIGHT.")
+
+                                    elif action in ["examine", "ex", "x", "inspect", "search", "take", "pick", "pickup", "grab", "collect", "steal", "give", "g" "drop", "discard", "leave", "place", "toss", "dump", "unlock","enter", "hide", "conceal", "duck", "n", "s", "e", "w", "u", "d", "save", "load", "quit"]:
+                                        typing("SORRY, YOU CANNOT USE THAT COMMAND NOW.")
+
+                                    else:
+                                        typing("SORRY, I DON'T UNDERSTAND THAT COMMAND. MAKE SURE YOU'RE TYPING THE RIGHT THING. IF YOU THINK YOU ARE, TRY A DIFFERENT WORD COMBINATION.")
+                                break
+                            elif fix_choice == "n":
+                                typing("OK.")
+                                break
+
+                            else:
+                                typing("THAT'S NOT A VALID ANSWER. PLEASE TYPE 'Y' OR 'N'.")
+                        continue
                     else:
                         typing("IT'S A VERY LARGE CONTROL PANEL, WITH MANY BUTTONS AND SWITCHES. EVERYTHING SEEMS TO BE IN ORDER.")
                         continue
@@ -3296,6 +3418,8 @@ while True:
 
         else:                                                    #END OF COMMANDS!!!!
             typing("I'M SORRY, DON'T UNDERSTAND THAT COMMAND. TYPE HELP FOR A LIST OF VALID COMMANDS.")
+            if current_room == "warden_room":
+                warden_count += 1
 
 
 
@@ -3376,18 +3500,25 @@ while True:
             end()
             break
         else:
-            typing("PLEASE ANSWER THE QUESTION\n")
-            time.sleep(1)
+            typing("PLEASE ANSWER THE QUESTION.")
+            time.sleep(0.2)
 
     elif ending == "escape":
         if "ticket" in inventory:
             discover(1, True, "LOOK WHAT I FOUND!  -  ESCAPE WITH THE CINEMA TICKET")
-            break#ENDING HERE WITH TICKET
-        else:
+            typing("\nAS YOU COME TO A STOP, THE DOORS OPEN ONTO A SMALL GRAVEL ROAD IN THE MIDDLE OF THE COUNTRYSIDE. FINALLY, A BREATH OF FRESH AIR. YOU LEAVE THE ELEVATOR AND THE DUNGEON BEHIND AND RUN OFF INTO THE WOODS! \nMAYBE YOU COULD SEE A MOVIE WITH THAT TICKET YOU FOUND!")
+            time.sleep(1)
             typing("\n\n-----YOU ESCAPED!-----\n")
-            time.sleep(2)
+            time.sleep(1)
             end()
-            break#ENDING HERE
+            break
+        else:
+            typing("\nAS YOU COME TO A STOP, THE DOORS OPEN ONTO A SMALL GRAVEL ROAD IN THE MIDDLE OF THE COUNTRYSIDE. FINALLY, A BREATH OF FRESH AIR. YOU LEAVE THE ELEVATOR AND THE DUNGEON BEHIND AND RUN OFF INTO THE WOODS!")
+            time.sleep(1)
+            typing("\n\n-----YOU ESCAPED!-----\n")
+            time.sleep(1)
+            end()
+            break
 
 
 
