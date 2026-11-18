@@ -62,8 +62,8 @@ def loading_bar(message, total_time):
 #variables                              variables
 playing = True
 instructions = True
-current_room = "security_hall_east"
-inventory = ["lighter", "oil", "hat"]
+current_room = "cell"
+inventory = []
 switch_active = False # generator active
 lighter_lit = False
 lighter_is_lit = False
@@ -113,42 +113,42 @@ ranks = {
     "escape" : {
         "1" : {
             "min_score" : 0,
-            "max_score" :75,              #INTEGER 1
+            "max_score" :150,              #INTEGER 1
             "name" : "HOPELESSLY LOST"
             },
         "2" : {
-            "min_score" : 50,             #INTEGER 2
-            "max_score" : 66,             #INTEGER 3
+            "min_score" : 150,             #INTEGER 2
+            "max_score" : 350,             #INTEGER 3
             "name" : "AVERAGE PRISONER"
             },
         "3" : {
-            "min_score" : 66,#INTEGER 3,
-            "max_score" : 66,#INTEGER 4,
+            "min_score" : 350,#INTEGER 3,
+            "max_score" : 400,#INTEGER 4,
             "name" : "NOVICE ESCAPIST"
             },
         "4" : {
-            "min_score" : 66,#INTEGER 4,
-            "max_score" : 66,#INTEGER 5,
+            "min_score" : 400,#INTEGER 4,
+            "max_score" : 450,#INTEGER 5,
             "name" : "DUNGEON EXPLORER"
                 },
         "5" : {
-            "min_score" : 66,#INTEGER 5,
-            "max_score" : 66,#INTEGER 6,
+            "min_score" : 450,#INTEGER 5,
+            "max_score" : 500,#INTEGER 6,
             "name" : "SEASONED ADVENTURER"
             },
         "6" : {
-            "min_score" : 66,#INTEGER 6,
-            "max_score" : 66,#INTEGER 7,
+            "min_score" : 500,#INTEGER 6,
+            "max_score" : 550,#INTEGER 7,
             "name" : "MASTER ESCAPIST"
             },
         "7" : {
-            "min_score" : 66,#INTEGER 7,
-            "max_score" : 66,#INTEGER 8,
+            "min_score" : 550,#INTEGER 7,
+            "max_score" : 601,#INTEGER 8,
             "name" : "MASTER OF THE DUNGEON"
             },
         "8" : {
-            "min_score" : 66,#HIGHEST INTEGER,
-            "max_score" : 66,# 1 ABOVE HIGHEST INTEGER,
+            "min_score" : 601,#HIGHEST INTEGER,
+            "max_score" : 602,# 1 ABOVE HIGHEST INTEGER,
             "name" : "LEGEND OF BLACKSTONE"
             },
         },
@@ -156,42 +156,42 @@ ranks = {
     "defeat" : {
         "1" : {
             "min_score" : 0,
-            "max_score" : 50,           #INTEGER 1,
+            "max_score" : 150,           #INTEGER 1,
             "name" : "HOPELESSLY LOST"
             },
         "2" : {
-            "min_score" : 50,                  #INTEGER 2,
-            "max_score" : 66,                  #INTEGER 3,
+            "min_score" : 150,                  #INTEGER 2,
+            "max_score" : 350,                  #INTEGER 3,
             "name" : "AVERAGE PRISONER"
             },
         "3" : {
-            "min_score" : 66,#INTEGER 3,
-            "max_score" : 66,#INTEGER 4,
+            "min_score" : 350,#INTEGER 3,
+            "max_score" : 400,#INTEGER 4,
             "name" : "TROUBLEMAKER"
             },
         "4" : {
-            "min_score" : 66,#INTEGER 4,
-            "max_score" : 66,#INTEGER 5,
+            "min_score" : 400,#INTEGER 4,
+            "max_score" : 450,#INTEGER 5,
             "name" : "DUNGEON EXPLORER"
                 },
         "5" : {
-            "min_score" : 66,#INTEGER 5,
-            "max_score" : 66,#INTEGER 6,
+            "min_score" : 450,#INTEGER 5,
+            "max_score" : 500,#INTEGER 6,
             "name" : "SEASONED ADVENTURER"
             },
         "6" : {
-            "min_score" : 66,#INTEGER 6,
-            "max_score" : 66,#INTEGER 7,
+            "min_score" : 500,#INTEGER 6,
+            "max_score" : 550,#INTEGER 7,
             "name" : "MASTER EXPLORER"
             },
         "7" : {
-            "min_score" : 66,#INTEGER 7,
-            "max_score" : 66,#INTEGER 8,
+            "min_score" : 550,#INTEGER 7,
+            "max_score" : 601,#INTEGER 8,
             "name" : "MASTER OF THE DUNGEON"
             },
         "8" : {
-            "min_score" : 66,#HIGHEST INTEGER,
-            "max_score" : 66,#1 ABOVE HIGHEST INTEGER,
+            "min_score" : 601,#HIGHEST INTEGER,
+            "max_score" : 602,#1 ABOVE HIGHEST INTEGER,
             "name" : "LEGEND OF BLACKSTONE"
             },
         },
@@ -201,7 +201,7 @@ def end():                                              #endings
     global score
     global secrets
     global ranks
-    if ending == "death" or ending == "capture":
+    if ending == "death" or ending == "capture" or ending == "quit":
         for rank_type in ranks["defeat"]:
             if ranks["defeat"][rank_type]["min_score"] <= score and ranks["defeat"][rank_type]["max_score"] > score:
                 rank = ranks["defeat"][rank_type]["name"]
@@ -214,7 +214,7 @@ def end():                                              #endings
 
 
     loading_bar("", 0.01005)
-    typing("\n\nSCORE: " +str(score) + "\n\nSECRETS: [" + str(secrets) + "/undefined_number]" + "\n\nRANK: " + rank + "\n")
+    typing("\n\nSCORE: " +str(score) + "/601\n\nSECRETS: [" + str(secrets) + "/9]" + "\n\nRANK: " + rank + "\n")
     loading_bar("", 0.01005)
     typing("\n\n\nTYPE 'DISCOVERIES' TO LIST THE SECRETS YOU HAVE FOUND OR PRESS ENTER TO END THE GAME.")
 
@@ -392,7 +392,7 @@ master_items = {
             "scored" : False,
             "score" : 10,
             "secret" : True,
-            "discovery" : False
+            "discovery" : None
                 },
         },
 
@@ -471,6 +471,7 @@ dungeon = {
                        },
         "objects" : {},
         "items" : {},
+        "scored" : False
         },
 
     "dark_cell" : {
@@ -858,6 +859,7 @@ dungeon = {
         "exits" : {},
         "objects" : {},
         "items" : {},
+        "scored" : False
         },
 
     "wide_hall" : {
@@ -911,7 +913,13 @@ dungeon = {
         "visited" : False,
         "exits" : {"w" : "wide_hall"},
         "objects" : {"desk" : {
-            "examine" : "IT'S A WOODEN DESK. ON IT IS A NOTE THAT READS: '-------MAINTENANCE LOG-------\n\n-FIXED LED LIGHTING IN PIGEON ROOM GRATE, IT LOOKS LIKE NATURAL LIGHT NOW.'"
+            "examine" : "IT'S A WOODEN DESK. ON IT IS A NOTE THAT READS: '-------MAINTENANCE LOG-------\n\n-FIXED LED LIGHTING IN PIGEON ROOM GRATE, IT LOOKS LIKE NATURAL LIGHT NOW.'",
+            "scoring" : {
+                "scored" : False,
+                "score" : 10,
+                "secret" : True,
+                "discovery" : "THE TRUTH ABOUT THE SUN  -  FIND OUT WHAT THE SKYLIGHT REALLY IS"
+                },
             },
         },
         "items" : {},
@@ -1006,8 +1014,9 @@ dungeon = {
         "items" : {
             "vice" : {"name" : "A LARGE VICE",
             "hidden_in" : None,
+                },
             },
-            },
+        "scored" : False
         },
 
     "storage_pit" : {
@@ -1086,6 +1095,7 @@ dungeon = {
             },
         "objects" : {},
         "items" : {},
+        "scored" : False
         },
     "sewer" : {
         "dark" : True,
@@ -1104,6 +1114,7 @@ dungeon = {
         "objects" : {},
         "items" : {},
         },
+
     "wet_hole" : {
         "dark" : True,
         "name" : "THE WET HOLE.",
@@ -1127,7 +1138,9 @@ dungeon = {
                 },
             },
         "items" : {},
+        "scored" : False
         },
+
     "sewer_east" : {
         "dark" : True,
         "name" : "THE EAST END OF THE SEWERS.",
@@ -1143,6 +1156,7 @@ dungeon = {
             "d" : "NO WAY ARE YOU GOING IN THAT WATER!",},
         "objects" : {},
         "items" : {},
+        "scored" : False
         },
     "translator_room" : {
         "name" : "THE TRANSLATOR ROOM.",
@@ -1164,6 +1178,7 @@ dungeon = {
                            "s" : "THE CELL IS LOCKED. IT LOOKS TOTALLY EMPTY INSIDE."},
         "objects" : {"camera" : {"examine" : "IT'S A LARGE CCTV CAMERA, THERE ARE MANY ALONG THE WALLS OF THIS CORRIDOR. IT'S LOOKING DIRECTLY AT YOU!"},},
         "items" : {},
+        "scored" : False
         },
 
     "max_security" : {
@@ -1201,6 +1216,7 @@ dungeon = {
         "blocked_exits" : {"n" : "THE CELL IS LOCKED. IT'S PITCH BLACK INSIDE."},
         "objects" : {"puddle" : {"examine" : "IT'S WATER, I THINK."}},
         "items" : {},
+        "scored" : False
         },
 
     "guard_office_2" : {
@@ -1272,6 +1288,7 @@ dungeon = {
                 },
             },
         "items" : {},
+        "scored" : False
         },
 
     "musty_cavern" : {
@@ -1324,6 +1341,7 @@ dungeon = {
             },
         },
         "items" : {},
+        "scored" : False
         },
 
     "collapsed_cavern" : {
@@ -1566,7 +1584,7 @@ def power_rooms():
 Help = "IN THIS GAME YOU MUST ESCAPE THE DUNGEON. USE ONE OR TWO WORD COMMANDS TO NAVIGATE THE GAME. YOU CAN MOVE IN FOUR DIRECTIONS: NORTH, EAST, SOUTH AND WEST. USE THE FIRST LETTER OF THESE WORDS AS SHOWN IN THE LIST OF VALID COMMANDS BELOW. IF YOU FORGET THESE COMMANDS, TYPE HELP TO BRING UP THIS TEXT AGAIN.\n\nVALID COMMANDS:\n\n>N\n>S\n>E\n>W\n>U\n>D\n\n>GET\n>DROP\n>EXAMINE\n>INVENTORY\n>HELP\n>QUIT\n>LOOK\n>LIGHT\n>OPEN\n>OBJECTS\n>ITEMS\nEXITS\n>SAVE\n>LOAD\n>HIDE\n\nFOLLOW COMMANDS SUCH AS 'GET', 'DROP', 'EXAMINE', AND 'OPEN' WITH A NOUN OR ITEM YOU WISH TO USE.\nUSE 'Y' AND 'N' AS YES AND NO. \nIF YOU WISH TO KNOW WHICH OBJECTS IN A ROOM ARE INTERACTABLE, USE 'OBJECTS'. IF YOU WISH TO KNOW WHICH ITEMS YOU CAN PICK UP IN A ROOM, USE 'ITEMS'. IF YOU WISH TO KNOW WHICH EXITS ARE CURRENTLY IN THE ROOM, USE 'EXITS'.\nUSE 'SAVE' AND 'LOAD' ALONG WITH A FILE NAME TO MANAGE SAVE GAMES. 'LIST SAVE' CAN BE USED TO LIST ALL SAVE GAMES.\n\n'DROP' IS USED AS A SUBSTITUTE FOR 'USE' IN MANY CASES. E.G. 'DROP VINYL' TO PLAY IT.\n\nNOT EVERYTHING IN THE DUNGEON IS AS IT FIRST SEEMS,\nYOU MUST THINK AND OBSERVE CAREFULLY IF YOU WISH TO ESCAPE."
 
 initial_dungeon = copy.deepcopy(dungeon)
-
+initial_master_items = copy.deepcopy(master_items)
 
 
 
@@ -1604,22 +1622,32 @@ while True:
     while playing == True:  #Set up
 
            #-----------------------------------------------------------------Discovery Rooms---
-        if current_room == "vent_shaft" and dungeon["vent_shaft"]["visited"] == False:
+        if current_room == "vent_shaft" and dungeon["vent_shaft"]["scored"] == False:
             discover(10, False, "I WONDER WHERE THIS COULD LEAD...  -  GET INSIDE THE VENT SHAFT")
-        if current_room in ["sewer_east", "sewer_west"] and dungeon["sewer_east"]["visited"] == False and dungeon["sewer_west"]["visited"] == False:
+            dungeon["vent_shaft"]["scored"] = True
+        if current_room in ["sewer_east", "sewer_west"] and dungeon["sewer_east"]["scored"] == False and dungeon["sewer_west"]["scored"] == False:
             discover(10, False, "A HANDY SHORTCUT  -  DISCOVER THE SEWERS")
-        if current_room == "wet_hole" and dungeon["wet_hole"]["visited"] == False:
+            dungeon["sewer_west"]["scored"] = True
+            dungeon["sewer_east"]["scored"] = True
+        if current_room == "wet_hole" and dungeon["wet_hole"]["scored"] == False:
             discover(5, True, None)
-        if current_room == "cell_corridor" and dungeon["cell_corridor"]["visited"] == False:
+            dungeon["wet_hole"]["scored"] = True
+        if current_room == "cell_corridor" and dungeon["cell_corridor"]["scored"] == False:
             discover(10, False, None)
-        if current_room == "vice_room" and dungeon["vice_room"]["visited"] == False:
+            dungeon["cell_corridor"]["scored"] = True
+        if current_room == "vice_room" and dungeon["vice_room"]["scored"] == False:
             discover(10, False, None)
-        if current_room in ["max_security_east", "max_security_west"] and dungeon["max_security_east"]["visited"] == False and dungeon["max_security_west"]["visited"] == False:
+            dungeon["vice_room"]["scored"] = True
+        if current_room in ["max_security_east", "max_security_west"] and dungeon["max_security_east"]["scored"] == False and dungeon["max_security_west"]["scored"] == False:
             discover(20, False, "I THINK I'VE BEEN SPOTTED...  -  BREAK INTO MAX SECURITY")
-        if current_room == "dig_site" and dungeon["dig_site"]["visited"] == False:
+            dungeon["max_security_east"]["scored"] = True
+            dungeon["max_security_west"]["scored"] = True
+        if current_room == "dig_site" and dungeon["dig_site"]["scored"] == False:
             discover(30, False, "THAT'S RIGHT. LET ME THROUGH!  -  GET PAST THE CHECKPOINT")
-        if current_room == "sealed_door" and dungeon["sealed_door"]["visited"] == False:
+            dungeon["dig_site"]["scored"] = True
+        if current_room == "sealed_door" and dungeon["sealed_door"]["scored"] == False:
             discover(10, True, "MEMORIES OF A LOST DUNGEON...  -  FIND THE SEALED DOOR...")
+            dungeon["sealed_door"]["scored"] = True
 
             #---------------------------------------------------------------------------------------
 
@@ -1662,7 +1690,7 @@ while True:
             guard_alert = 0
             dungeon["warden_room"]["visited"] = True
             typing("YOU ENTER A HUGE ROOM, THE FRONT DOOR TO THE DUNGEON IS SPOTTED ON THE FAR WESTERN WALL UNDER A LARGE BALCONY AND BEHIND THE LARGE STAIRCASE. A MASSIVE, MARBLE THRONE SITS DIRECTLY ABOVE THE STAIRS, IN THE CENTRE. SITTING ON THE MIGHTY CHAIR IS THE MAN HIMSELF.\nTHE WARDEN.\n\n'SO, YOU HAVE MADE IT HERE. YOU WISH TO ESCAPE I IMAGINE, THROUGH THE MAIN EXIT!' HE SAYS IN A MILDLY ENTERTAINED VOICE.\n\nA SMALL FIRE ESCAPE SIGN ABOVE THE DOOR FLICKERS FOR A MOMENT.\n\n'SORRY, BUT I CANNOT ALLOW THAT.' HE GETS UP AND STARTS WALKING TOWARDS YOU!\n\n" + '\033[97m' + "\nI'D ESTIMATE YOU ONLY HAVE ABOUT THREE TURNS BEFORE HE REACHES YOU."+ '\033[0m')
-            warden_count = 3
+            warden_count = 2
             time.sleep(2)
 
         if current_room == "thug_room" and met_prisoners == False:
@@ -2136,6 +2164,8 @@ while True:
                 if lighter_lit == True:
                     typing("\n\n" + dungeon[current_room]["desc_lit"])
                     continue
+                else:
+                    typing("IT IS TOO DARK TO SEE ANYTHING!")
             else:
                 typing(dungeon[current_room]["desc"])
 
@@ -2150,18 +2180,18 @@ while True:
                 else:
                     typing("YOU CAN'T FILL IT.")
             elif target == "lighter":
-                action = "light"
-                target = "lighter"
+                typing("TRY 'LIGHT LIGHTER' INSTEAD.")
             else:
                 typing("YOU CAN'T FILL THAT.")
 
         elif action in ["drink", "consume", "chug", "swallow", "eat"]:                #consume
             if target in inventory or target in dungeon[current_room]["objects"] or target in dungeon[current_room]["items"]:
-                if target == "water" and ("water" in inventory) or (current_room == "water_room"):
-                    typing("YOU DRINK THE WATER. IT TASTES STALE.")
-                    if "water" in inventory:
-                        inventory.remove("water")
-                        inventory.append("bottle")
+                if target == "water":
+                    if ("water" in inventory) or (current_room == "water_room"):
+                        typing("YOU DRINK THE WATER. IT TASTES STALE.")
+                        if "water" in inventory:
+                            inventory.remove("water")
+                            inventory.append("bottle")
                 elif target == "oil":
                     typing("I'M SORRY, HAVE YOU GONE MAD?")
                 elif target == "chocolate":
@@ -2170,7 +2200,7 @@ while True:
                     if "chocolate" in inventory:
                         inventory.remove("chocolate")
                     else:
-                        dungeon[current_room]["items"].remove("chocolate")
+                        del dungeon[current_room]["items"]["chocolate"]
                 elif target == "pigeon" and "pigeon" in inventory or "pigeon" in dungeon[current_room]["items"]:
                     typing("THE PIGEON DOES'T LOOK PARTICULARLY KEEN ON THAT IDEA.")
                 else:
@@ -2516,7 +2546,6 @@ while True:
                 #maintenance exeption---------------------------------------------
                 if current_room == "maintenance_room" and target == "desk":
                     sky_truth_discovered = True
-                    discover(10, True, "THE TRUTH ABOUT THE SUN  -  FIND OUT WHAT THE SKYLIGHT REALLY IS")
                     dungeon["pigeon_room"]["desc"] = "YOU ARE IN A VERY TALL BUT NARROW ROOM WITH A SMALL GRATE IN THE CEILING LETTING A TINY AMOUNT OF 'SUNLIGHT' IN. YOU NOTICE IT'S FLICKERING SLIGHTLY. THE ONLY OTHER NOTABLE THING IN THE ROOM IS A METAL POLE ON WHICH A SMALL PIGEON SITS."
                     dungeon["pigeon_room"]["objects"]["grate"]["examine"] =  "IT IS A SMALL METAL GRATE THROUGH WHICH YOU CAN SEE FAKE SUNLIGHT POURING IN. YOU COULD'VE BEEN TRICKED THAT IT WAS REAL EARLIER."
                 #-----------------------------------------------------------------
@@ -2652,7 +2681,7 @@ while True:
                                             else:
                                                 typing("A SMALL RED WARNING LIGHT COMES ON. YOU HAVEN'T DONE SOMETHING RIGHT.")
 
-                                    elif action in ["examine", "ex", "x", "inspect", "search", "take", "pick", "pickup", "grab", "collect", "steal", "give", "g" "drop", "discard", "leave", "place", "toss", "dump", "unlock","enter", "hide", "conceal", "duck", "n", "s", "e", "w", "u", "d", "save", "load", "quit"]:
+                                    elif action in ["examine", "ex", "x", "inspect", "search", "take", "pick", "pickup", "grab", "collect", "steal", "give", "g", "drop", "discard", "leave", "place", "toss", "dump", "unlock","enter", "hide", "conceal", "duck", "n", "s", "e", "w", "u", "d", "save", "load", "quit"]:
                                         typing("SORRY, YOU CANNOT USE THAT COMMAND NOW.")
 
                                     else:
@@ -3151,7 +3180,7 @@ while True:
             else:
                 typing("WHAT ARE YOU HIDING FROM? YOU DON'T NEED TO.")
 
-        elif command == "dev":                                 #Devcommands
+        elif command == "dev_imacheater_mode":                                 #Devcommands
 
             typing("DEVELPOER MODE ACTIVE - USE WITH CAUTION. THIS WILL SPOIL THE GAME IF USED INCORRECTLY!")
             devmode = True
@@ -3323,7 +3352,7 @@ while True:
                         typing("\n-OPENED " + obj_to_open)
             typing("\nOBJECTS OPENED!")
 
-        elif command == "devlight":
+        elif command == "devlight" and devmode == True:
             if devlit == False:
                 devlit = True
                 lighter_lit = True
@@ -3340,7 +3369,6 @@ while True:
             typing(f"\nTHE DOOR CODE IS: {pincode}.")
         elif action == "devfixgen" and devmode == True:
             typing("\nWITH A GROAN AND A SUDDEN SPLUTTER, THE GENERATOR BURSTS TO LIFE, ALMOST RUPTURING YOUR EARDRUMS AS THE IMMENSE SOUND BOOMS THROUGH THE WHOLE CHAMBER. HUGE PLUMES OF SMOKE AND EXHAUST ARE COUGHED OUT OF THE VENTS AT AN EXTREME RATE. IF THE DUNGEON DIDN'T HAVE ENOUGH POWER BEFORE, IT CERTAINLY DOES NOW.")
-            discover(50, False, None)
             switch_active = True #generator active
             fixing_gen = False
             power_rooms()
@@ -3367,7 +3395,24 @@ while True:
                 "discoveries" : discoveries,
                 "secrets" : secrets,
                 "pincode" : pincode,
-                #ADD ALL VARIABLES
+                "rubble_in_room" : rubble_in_room,
+                "rubble_in_pile" : rubble_in_pile,
+                "guard_in_room" : guard_in_room,
+                "guard_alert" : guard_alert,
+                "is_hidden" : is_hidden,
+                "switch_used" : switch_used,
+                "guard_water_count" : guard_water_count,
+                "whistle_blown" : whistle_blown,
+                "vice_in_place" : vice_in_place,
+                "first_guard" : first_guard,
+                "examine_help_count" : examine_help_count,
+                "stool_up" : stool_up,
+                "guard_distracted" : guard_distracted,
+                "miner_moved" : miner_moved,
+                "left_dig_site" : left_dig_site,
+                "fixing_gen" : fixing_gen,
+                "warden_count" : warden_count,
+                "sky_truth_discovered" : sky_truth_discovered,
                 "dungeon_state" : dungeon
                 }
 
@@ -3413,7 +3458,24 @@ while True:
             secrets = save_packet["secrets"]
             met_prisoners = save_packet["met_prisoners"]
             pincode = save_packet["pincode"]
-            #ADD ALL VARIABLES
+            rubble_in_room = save_packet["rubble_in_room"]
+            rubble_in_pile = save_packet["rubble_in_pile"]
+            guard_in_room = save_packet["guard_in_room"]
+            guard_alert = save_packet["guard_alert"]
+            is_hidden = save_packet["is_hidden"]
+            switch_used = save_packet["switch_used"]
+            guard_water_count = save_packet["guard_water_count"]
+            whistle_blown = save_packet["whistle_blown"]
+            vice_in_place = save_packet["vice_in_place"]
+            first_guard = save_packet["first_guard"]
+            examine_help_count = save_packet["examine_help_count"]
+            stool_up = save_packet["stool_up"]
+            guard_distracted = save_packet["guard_distracted"]
+            miner_moved = save_packet["miner_moved"]
+            left_dig_site = save_packet["left_dig_site"]
+            fixing_gen = save_packet["fixing_gen"]
+            warden_count = save_packet["warden_count"]
+            sky_truth_discovered = save_packet["sky_truth_discovered"]
             dungeon = save_packet["dungeon_state"]
             loading_bar("RESTORING SAVE", 2)
             typing("SAVE RESTORED.")
@@ -3464,6 +3526,7 @@ while True:
         break
 
     elif ending == "quit":
+
         end()
         break
 
@@ -3492,8 +3555,41 @@ while True:
 
             typing("\n\nTHE DUNGEON HAS BEEN RESET!")
             dungeon = copy.deepcopy(initial_dungeon)
+            master_items = copy.deepcopy(initial_master_items)
             time.sleep(1)
-            #COPY VARIABLES HERE!!!!!!!!!!!!!
+            score = 0
+            discoveries = []
+            secrets = 0
+            playing = True
+            instructions = True
+            current_room = "cell"
+            inventory = []
+            switch_active = False # generator active
+            lighter_lit = False
+            lighter_is_lit = False
+            ending = ""
+            pigeon_tame = False
+            previous_room = current_room
+            met_prisoners = False
+            rubble_in_room = 3
+            rubble_in_pile = 0
+            guard_in_room = False
+            guard_alert = 0
+            is_hidden = False
+            switch_used = False
+            guard_water_count = 0
+            whistle_blown = 0
+            vice_in_place = False
+            first_guard = True
+            examine_help_count = 2
+            stool_up = False
+            guard_distracted = False
+            miner_moved = False
+            left_dig_site = False
+            fixing_gen = False
+            warden_count = -1
+            sky_truth_discovered = False
+
 
 
 
