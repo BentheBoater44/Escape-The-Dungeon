@@ -1,4 +1,5 @@
-import sys, time, textwrap, os, copy, random, json, glob        #    ---------TO-DO-----------
+import sys, time, textwrap, os, copy, random, json, glob     #    ---------TO-DO-----------
+from pathlib import Path
 
 def typing(text):
     terminal_size = os.get_terminal_size().columns
@@ -55,8 +56,14 @@ def loading_bar(message, total_time):
         sys.stdout.flush()
         time.sleep(bar_characters)
 
+if sys.platform == "win32":                 #OS detection for save files
+    save_dir = Path(os.environ["APPDATA"]) / "EscapeTheDungeon"
 
+elif sys.platform == "darwin":
+    save_dir = Path.home() / "Library" / "Application Support" / "EscapeTheDungeon"
 
+else:
+    save_dir = Path.home() / ".local" / "share" / "EscapeTheDungeon"
 
 
 #variables                              variables
@@ -1393,7 +1400,8 @@ dungeon = {
         "items" : {
             "bent_key" : {
                 "name" : "A BENT KEY",
-                "hidden_in" : None
+                "hidden_in" : None,
+                "id_type" : "key",
                 },
             },
         },
@@ -3379,6 +3387,9 @@ while True:
             if target == "":
                 typing("PLEASE PROVIDE A SAVE NAME.")
                 continue                             #ADD ALL VARIABLES
+
+            save_dir.mkdir(parents=True, exist_ok=True)
+
             save_packet = {
                 "playing" : playing,
                 "master_items" : master_items,
@@ -3416,19 +3427,19 @@ while True:
                 "dungeon_state" : dungeon
                 }
 
-            filename = "etdsave_" + target + ".json"
+            filename = save_dir / ("etdsave_" + target + ".json")
             with open(filename, "w") as file:
                 json.dump(save_packet, file)
-            typing("GAME SAVED AS: " + filename.upper() + "! YOU CAN REFER TO IT AS '" + target.upper() + "' WHEN LOADING.\n")
+            typing("GAME SAVED AS: " + str(filename).upper() + "! YOU CAN REFER TO IT AS '" + target.upper() + "' WHEN LOADING.\n")
 
         elif action == "list" and target == "save":                          #list save
-            save_files = glob.glob("etdsave_*.json")
+            save_files = glob.glob(str(save_dir / "etdsave_*.json"))
             if len(save_files) == 0:
                 typing("NO VALID SAVE FILES DETECTED.\n")
             else:
                 typing("\nSAVE FILES LOCATED:\n")
                 for file_path in save_files:
-                    clean_name = file_path.replace("etdsave_", "").replace(".json", "")
+                    clean_name = Path(file_path).stem.replace("etdsave_", "")
                     typing("-" + clean_name.upper() + "\n")
 
 
@@ -3436,7 +3447,7 @@ while True:
             if target == "":
                 typing("PLEASE PROVIDE THE SAVE NAME.")
                 continue
-            filename = "etdsave_" + target + ".json"
+            filename = save_dir / ("etdsave_" + target + ".json")
             if not os.path.exists(filename):
                 typing("SAVE " + target.upper() + " NOT FOUND. ARE YOU SURE YOU TYPED THE CORRECT NAME?")
                 continue
